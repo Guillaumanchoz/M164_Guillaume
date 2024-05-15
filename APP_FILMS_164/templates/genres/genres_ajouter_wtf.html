@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %} Ajouter un compte (WTF) {% endblock %}
+{% block body %}
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<p>
+				Ajouter un nouveau compte (WTForms)
+			</p>
+			<form action="" method="POST" novalidate>
+				<!-- Protection contre les attaques Cross-Site Request Forgery (CSRF) -->
+				{{ form.hidden_tag() }}
+				<div class="form-group">
+					<p>
+						{{ form.identifiant_wtf.label }}<br>
+						{{ form.identifiant_wtf(size=32) }}<br>
+						{% for error in form.identifiant_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
+						{{ form.mdp_wtf.label }}<br>
+						{{ form.mdp_wtf(size=32) }}<br>
+						{% for error in form.mdp_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
+						{{ form.nom_wtf.label }}<br>
+						{{ form.nom_wtf(size=32) }}<br>
+						{% for error in form.nom_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
+						{{ form.prenom_wtf.label }}<br>
+						{{ form.prenom_wtf(size=32) }}<br>
+						{% for error in form.prenom_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
+						{{ form.mail_wtf.label }}<br>
+						{{ form.mail_wtf(size=32) }}<br>
+						{% for error in form.mail_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
+						{{ form.num_tel_wtf.label }}<br>
+						{{ form.num_tel_wtf(size=32) }}<br>
+						{% for error in form.num_tel_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+				{{ form.submit(class="btn btn-primary") }}
+				</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+

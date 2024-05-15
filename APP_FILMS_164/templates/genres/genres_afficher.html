@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %} Afficher Compte {% endblock %}
+{% block body %}
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<p>
+				Compte
+			</p>
+			<td class="text-center" class="align-middle">
+				<a class="btn btn-primary" href="{{ url_for('genres_ajouter_wtf') }}" role="button">Ajouter</a>
+			</td>
+            <table class="table table-bordered table-sm">
+            {% if data %}
+                <thead>
+                    <tr>
+                        <th class="align-middle">
+                            identifiant
+                        </th>
+						<th class="align-middle">
+                            mot de passe
+                        </th>
+						<th class="align-middle">
+                            Nom
+                        </th>
+                        <th class="align-middle">
+                            Prénom
+                        </th>
+                        <th class="align-middle">
+							Mail
+                        </th>
+                        <th class="align-middle">
+							numéro de téléphone
+                        </th>
+                        <th class="align-middle">
+							Date d'inscription
+                        </th>
+                </thead>
+            {% endif %}
+
+            {% for row in data %}
+				<tbody>
+					<tr>
+						<td class="align-middle">
+							{{ row.Identifiant_compte }}
+						</td>
+						<td class="align-middle">
+							{{ row.Mot_de_passe }}
+						</td>
+						<td class="align-middle">
+							{{ row.nom }}
+						</td>
+						<td class="align-middle">
+							{{ row.prenom }}
+						</td>
+						<td class="align-middle">
+							{{ row.mail }}
+						</td>
+						<td class="align-middle">
+							{{ row.num_tel }}
+						</td>
+						<td class="align-middle">
+							{{ row.date_creation }}
+						</td>
+						<td class="text-center" class="align-middle">
+							<a class="btn btn-warning" href="{{ url_for('genre_update_wtf', id_genre_btn_edit_html=row.id_genre) }}" role="button">Edit</a>
+						</td>
+						<td class="text-center" class="align-middle">
+							<a class="btn btn-danger" href="{{ url_for('genre_delete_wtf', id_genre_btn_delete_html=row.id_genre) }}" role="button">Delete</a>
+						</td>
+					</tr>
+				</tbody>
+            {% else %}
+				<tbody>
+					<tr>
+						<td>
+							Aucun genre.
+						</td>
+						<td>
+							<a class="btn btn-primary" href="{{ url_for('genres_ajouter_wtf') }}" role="button">Ajouter</a>
+						</td>
+					</tr>
+				</tbody>
+            {% endfor %}
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
