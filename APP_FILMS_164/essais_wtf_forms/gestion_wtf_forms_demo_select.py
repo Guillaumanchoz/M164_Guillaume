@@ -41,7 +41,7 @@ def demo_select_wtf():
 
             if form_demo.submit_btn_ok_dplist_genre.data:
                 print("Genre sélectionné : ",
-                      form_demo.genres_dropdown_wtf.data)
+                        form_demo.genres_dropdown_wtf.data)
                 genre_selectionne = form_demo.genres_dropdown_wtf.data
                 form_demo.genres_dropdown_wtf.choices = session['genre_val_list_dropdown']
                 data_genres = session['data_genres']

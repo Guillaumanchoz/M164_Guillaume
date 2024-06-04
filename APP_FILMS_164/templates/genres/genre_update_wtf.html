@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %} Editer un Compte (WTF) {% endblock %}
 {% block body %}
+	<h1>Test</h1>
 <div class="container">
 	<div class="row">
 		<div class="col-md-12">
@@ -12,44 +13,44 @@
 				{{ form_update.hidden_tag() }}
 				<div class="form-group">
 					<p>
-						{{ form_update.identifiant_update_wtf.label }}<br>
-						{{ form_update.identifiant_update_wtf(size=32) }}<br>
-						{% for error in form_update.identifiant_update_wtf.errors %}
+						{{ form_update.identifiant_compte_wtf.label }}<br>
+						{{ form_update.identifiant_compte_wtf(size=32) }}<br>
+						{% for error in form_update.identifiant_compte_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.mdp_update_wtf.label }}<br>
-						{{ form_update.mdp_update_wtf(size=32) }}<br>
-						{% for error in form_update.mdp_update_wtf.errors %}
+						{{ form_update.mdp_wtf.label }}<br>
+						{{ form_update.mdp_wtf(size=32) }}<br>
+						{% for error in form_update.mdp_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.nom_update_wtf_essai.label }}<br>
-						{{ form_update.nom_update_wtf_essai(size=32) }}<br>
-						{% for error in form_update.nom_update_wtf_essai.errors %}
+						{{ form_update.nom_wtf.label }}<br>
+						{{ form_update.nom_wtf(size=32) }}<br>
+						{% for error in form_update.nom_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.prenom_update_wtf_essai.label }}<br>
-						{{ form_update.prenom_update_wtf_essai(size=32) }}<br>
-						{% for error in form_update.prenom_update_wtf_essai.errors %}
+						{{ form_update.prenom_wtf.label }}<br>
+						{{ form_update.prenom_wtf(size=32) }}<br>
+						{% for error in form_update.prenom_wtf .errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.mail_update_wtf_essai.label }}<br>
-						{{ form_update.mail_update_wtf_essai(size=32) }}<br>
-						{% for error in form_update.mail_update_wtf_essai.errors %}
+						{{ form_update.mail_wtf.label }}<br>
+						{{ form_update.mail_wtf(size=32) }}<br>
+						{% for error in form_update.mail_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.num_tel_update_wtf_essai.label }}<br>
-						{{ form_update.num_tel_update_wtf_essai(size=32) }}<br>
-						{% for error in form_update.num_tel_update_wtf_essai.errors %}
+						{{ form_update.num_tel_wtf.label }}<br>
+						{{ form_update.num_tel_wtf(size=32) }}<br>
+						{% for error in form_update.num_tel_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>

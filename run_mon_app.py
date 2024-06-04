@@ -24,7 +24,7 @@ CORS(app)
 if __name__ == '__main__':
     # OM 2023.03.25
     # Les variables d'environnement de FLASK sont définies dans le fichier ".env"
-    # Une clé est nécessaire pour crypter les "cookies" utilisés par les messages FLASH.
+    #     # Une clé est nécessaire pour crypter les "cookies" utilisés par les messages FLASH.
     app.secret_key = SECRET_KEY_FLASK
     # DEBUG_FLASK   inutile de vous dire que c'est insdipensable ... avant la version finale
     app.run(debug=DEBUG_FLASK, host=ADRESSE_SRV_FLASK, port=PORT_FLASK)

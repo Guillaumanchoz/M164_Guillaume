@@ -14,6 +14,9 @@
             {% if data %}
                 <thead>
                     <tr>
+						<th class="align-middle">
+                            ID
+                        </th>
                         <th class="align-middle">
                             identifiant
                         </th>
@@ -32,8 +35,8 @@
                         <th class="align-middle">
 							numéro de téléphone
                         </th>
-                        <th class="align-middle">
-							Date d'inscription
+						<th class="align-middle">
+							Statut compte
                         </th>
                 </thead>
             {% endif %}
@@ -41,6 +44,9 @@
             {% for row in data %}
 				<tbody>
 					<tr>
+						<td class="align-middle">
+							{{ row.ID_compte }}
+						</td>
 						<td class="align-middle">
 							{{ row.Identifiant_compte }}
 						</td>
@@ -60,13 +66,13 @@
 							{{ row.num_tel }}
 						</td>
 						<td class="align-middle">
-							{{ row.date_creation }}
+							{{ row.designation }}
 						</td>
 						<td class="text-center" class="align-middle">
-							<a class="btn btn-warning" href="{{ url_for('genre_update_wtf', id_genre_btn_edit_html=row.id_genre) }}" role="button">Edit</a>
+							<a class="btn btn-warning" href="{{ url_for('genre_update_wtf', id_genre_btn_edit_html=row.ID_compte) }}" role="button">Edit</a>
 						</td>
 						<td class="text-center" class="align-middle">
-							<a class="btn btn-danger" href="{{ url_for('genre_delete_wtf', id_genre_btn_delete_html=row.id_genre) }}" role="button">Delete</a>
+							<a class="btn btn-danger" href="{{ url_for('genre_delete_wtf', id_genre_btn_delete_html=row.ID_compte) }}" role="button">Delete</a>
 						</td>
 					</tr>
 				</tbody>

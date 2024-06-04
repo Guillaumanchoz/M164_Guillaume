@@ -36,7 +36,7 @@ def genres_afficher(order_by, id_genre_sel):
         try:
             with DBconnection() as mc_afficher:
                 if order_by == "ASC" and id_genre_sel == 0:
-                    strsql_genres_afficher = """SELECT * FROM t_compte ORDER BY id_compte ASC"""
+                    strsql_genres_afficher = """SELECT c.* , sc.* FROM t_compte c LEFT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte UNION SELECT c.* , sc.* FROM t_compte c RIGHT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte ORDER BY id_compte ASC"""
                     mc_afficher.execute(strsql_genres_afficher)
                 elif order_by == "ASC":
                     # C'EST LA QUE VOUS ALLEZ DEVOIR PLACER VOTRE PROPRE LOGIQUE MySql
@@ -44,12 +44,12 @@ def genres_afficher(order_by, id_genre_sel):
                     # Pour "lever"(raise) une erreur s'il y a des erreurs sur les noms d'attributs dans la table
                     # donc, je précise les champs à afficher
                     # Constitution d'un dictionnaire pour associer l'id du genre sélectionné avec un nom de variable
-                    valeur_id_genre_selected_dictionnaire = {"value_id_genre_selected": id_genre_sel}
-                    strsql_genres_afficher = """SELECT *  FROM t_compte WHERE id_compte = %(value_id_genre_selected)s"""
+                    valeur_id_genre_selected_dictionnaire = {"value_id_compte_selected": id_genre_sel}
+                    strsql_genres_afficher = """SELECT c.* , sc.* FROM t_compte c LEFT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte UNION SELECT c.* , sc.* FROM t_compte c RIGHT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte WHERE id_compte = %(value_id_compte_selected)s"""
 
                     mc_afficher.execute(strsql_genres_afficher, valeur_id_genre_selected_dictionnaire)
                 else:
-                    strsql_genres_afficher = """SELECT * FROM t_compte ORDER BY id_compte DESC"""
+                    strsql_genres_afficher = """SELECT c.* , sc.* FROM t_compte c LEFT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte UNION SELECT c.* , sc.* FROM t_compte c RIGHT JOIN t_statut_compte sc ON sc.ID_statut_compte = c.FK_statut_compte ORDER BY id_compte DESC"""
 
                     mc_afficher.execute(strsql_genres_afficher)
 
@@ -103,27 +103,29 @@ def genres_ajouter_wtf():
     if request.method == "POST":
         try:
             if form.validate_on_submit():
-                identifiant = form.identifiant_wtf.data
+                Identifiant_compte = form.identifiant_wtf.data
                 mdp = form.mdp_wtf.data
                 nom = form.nom_wtf.data
                 prenom = form.prenom_wtf.data
                 mail = form.mail_wtf.data
                 num_tel = form.num_tel_wtf.data
-                valeurs_insertion_dictionnaire = {"value_identifiant": identifiant,
+                statut = 2
+                valeurs_insertion_dictionnaire = {"value_Identifiant_compte": Identifiant_compte,
                                                   "value_mdp": mdp,
                                                   "value_intitule_genre": nom,
                                                   "value_prenom": prenom,
                                                   "value_mail": mail,
                                                   "value_num_tel": num_tel,
+                                                  "value_statut": statut
                                                   }
 
                 print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
                 date = datetime.today().strftime("%Y-%m-%d")
 
-                strsql_insert_genre = """INSERT INTO t_compte (ID_compte,Identifiant_compte,Mot_de_passe,nom,prenom,mail,num_tel,date_creation) 
-                VALUES (NULL,%(value_identifiant)s,%(value_mdp)s,%(value_intitule_genre)s,%(value_prenom)s,%(value_mail)s,%(value_num_tel)s,%(date_creation)s)"""
-                valeurs_insertion_dictionnaire["date_creation"]= date
+                strsql_insert_genre = """INSERT INTO t_compte (ID_compte,FK_statut_compte,Identifiant_compte,Mot_de_passe,nom,prenom,mail,num_tel,date_creation) VALUES (NULL,%(value_statut)s,%(value_Identifiant_compte)s,%(value_mdp)s,%(value_intitule_genre)s,%(value_prenom)s,%(value_mail)s,%(value_num_tel)s,%(date_creation)s)"""
+
+                valeurs_insertion_dictionnaire["date_creation"] = date
 
                 with DBconnection() as mconn_bd:
                     mconn_bd.execute(strsql_insert_genre, valeurs_insertion_dictionnaire)
@@ -133,7 +135,13 @@ def genres_ajouter_wtf():
                 print(f"Données insérées !!")
 
                 # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
-                return redirect(url_for('genres_afficher', order_by='DESC', id_genre_sel=0))
+                return redirect(url_for('genres_afficher', order_by='ASC', id_genre_sel=0))
+
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        print(f"Error in the {getattr(form, field).label.text} field - {error}")
+
 
         except Exception as Exception_genres_ajouter_wtf:
             raise ExceptionGenresAjouterWtf(f"fichier : {Path(__file__).name}  ;  "
@@ -178,27 +186,32 @@ def genre_update_wtf():
         if request.method == "POST" and form_update.submit.data:
             # Récupèrer la valeur du champ depuis "genre_update_wtf.html" après avoir cliqué sur "SUBMIT".
             # Puis la convertir en lettres minuscules.
-            identifiant_update = form_update.identifiant_update_wtf.data
-            mdp_update = form_update.mdp_update_wtf.data
-            nom_update = form_update.nom_update_wtf.data
-            prenom_update = form_update.prenom_update_wtf.data
-            mail_update = form_update.mail_update_wtf.data
-            num_tel_update = form_update.num_tel_update_wtf.data
+            identifiant_compte = form_update.identifiant_compte_wtf.data
+            Mot_de_passe = form_update.mdp_wtf.data
+            nom = form_update.nom_wtf.data
+            prenom = form_update.prenom_wtf.data
+            mail = form_update.mail_wtf.data
+            num_tel = form_update.num_tel_wtf.data
 
-            valeur_update_dictionnaire = {"value_identifiant_update": identifiant_update,
-                                          "value_mdp_update": mdp_update,
-                                          "value_nom_update": nom_update,
-                                          "Value_prenom_update": prenom_update,
-                                          "Value_mail_update": mail_update,
-                                          "Value_num_tel_update": num_tel_update
+            valeur_update_dictionnaire = {"value_id_compte": id_compte_update,
+                                          "value_identifiant": identifiant_compte,
+                                          "value_Mot_de_passe": Mot_de_passe,
+                                          "value_nom": nom,
+                                          "Value_prenom": prenom,
+                                          "Value_mail": mail,
+                                          "Value_num_tel": num_tel
                                           }
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
-            date_update = datetime.today().strftime("%Y-%m-%d-%h-%M-%s")
 
-            str_sql_update_intitulegenre = """UPDATE t_compte SET Identifiant_compte,Mot_de_passe,nom,prenom,mail,num_tel,date_creation
-              = %(value_identifiant_update)s,%(value_mdp_update)s,%(value_nom_update)s,%(Value_prenom_update)s,%(Value_mail_update)s,%(Value_num_tel_update)s,%(date_creation_update)s
-            WHERE id_compte = %(id_compte_update)s """
-            valeur_update_dictionnaire["date_creation_update"] = date_update
+
+            str_sql_update_intitulegenre = """UPDATE t_compte SET Identifiant_compte = %(value_identifiant)s,
+                                                                Mot_de_passe = %(value_Mot_de_passe)s,
+                                                                nom = %(value_nom)s,
+                                                                prenom = %(Value_prenom)s, 
+                                                                mail = %(Value_mail)s,
+                                                                num_tel = %(Value_num_tel)s
+                                                                WHERE ID_compte = %(value_id_compte)s """
+
 
             with DBconnection() as mconn_bd:
                 mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
@@ -212,33 +225,39 @@ def genre_update_wtf():
 
         elif request.method == "GET":
             # Opération sur la BD pour récupérer "id_genre" et "intitule_genre" de la "t_genre"
-            str_sql_id_genre = "SELECT Identifiant_compte, Mot_de_passe, nom, prenom, mail, num_tel, date_creation FROM t_compte " \
-                               "WHERE id_compte = %(value_id_compte)s"
+            str_sql_id_genre = "SELECT * FROM t_compte " \
+                               "WHERE ID_compte = %(value_id_compte)s"
             valeur_select_dictionnaire = {"value_id_compte": id_compte_update,
 
                                           }
             with DBconnection() as mybd_conn:
                 mybd_conn.execute(str_sql_id_genre, valeur_select_dictionnaire)
             # Une seule valeur est suffisante "fetchone()", vu qu'il n'y a qu'un seul champ "nom genre" pour l'UPDATE
-            data_nom_genre = mybd_conn.fetchone()
-            print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
-                  data_nom_genre["intitule_genre"])
+            data_identifiant_compte = mybd_conn.fetchone()
+
+
+
+            # print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
+            #       data_nom_genre["intitule_genre"])
 
             # Afficher la valeur sélectionnée dans les champs du formulaire "genre_update_wtf.html"
-            form_update.identifiant_update_wtf = data_nom_genre ["Identifiant"]
-            form_update.mdp_update_wtf = data_nom_genre ["Mot de passe"]
-            form_update.nom_update_wtf.data = data_nom_genre["Nom"]
-            form_update.prenom_update_wtf = data_nom_genre ["Prénom"]
-            form_update.mail_update_wtf = data_nom_genre ["Mail"]
-            form_update.num_tel_update_wtf = data_nom_genre ["Numéro de téléphone"]
-
+            form_update.identifiant_compte_wtf.data = data_identifiant_compte["Identifiant_compte"]
+            form_update.mdp_wtf.data = data_identifiant_compte["Mot_de_passe"]
+            form_update.nom_wtf.data = data_identifiant_compte["nom"]
+            form_update.prenom_wtf.data = data_identifiant_compte["prenom"]
+            form_update.mail_wtf.data = data_identifiant_compte["mail"]
+            form_update.num_tel_wtf.data = data_identifiant_compte["num_tel"]
 
     except Exception as Exception_genre_update_wtf:
         raise ExceptionGenreUpdateWtf(f"fichier : {Path(__file__).name}  ;  "
                                       f"{genre_update_wtf.__name__} ; "
                                       f"{Exception_genre_update_wtf}")
 
-    return render_template("genres/genre_update_wtf.html", form_update=form_update)
+    print("returning template")
+    try:
+        return render_template("genres/genre_update_wtf.html", form_update=form_update)
+    except Exception as e:
+        print(e)
 
 
 """
@@ -287,8 +306,8 @@ def genre_delete_wtf():
                 valeur_delete_dictionnaire = {"value_id_compte": id_compte_delete}
                 print("valeur_delete_dictionnaire ", valeur_delete_dictionnaire)
 
-                str_sql_delete_films_genre = """DELETE FROM t_compte WHERE ID_compte = %(value_id_compte)s"""
-                str_sql_delete_idgenre = """DELETE FROM t_compte WHERE id_compte = %(value_id_compte)s"""
+                str_sql_delete_films_genre = """DELETE * FROM t_compte WHERE ID_compte = %(value_id_compte)s"""
+                str_sql_delete_idgenre = """DELETE * FROM t_compte WHERE id_compte = %(value_id_compte)s"""
                 # Manière brutale d'effacer d'abord la "fk_genre", même si elle n'existe pas dans la "t_genre_film"
                 # Ensuite on peut effacer le genre vu qu'il n'est plus "lié" (INNODB) dans la "t_genre_film"
                 with DBconnection() as mconn_bd:
@@ -320,7 +339,7 @@ def genre_delete_wtf():
                 session['data_films_attribue_genre_delete'] = data_films_attribue_genre_delete
 
                 # Opération sur la BD pour récupérer "id_genre" et "intitule_genre" de la "t_genre"
-                str_sql_id_genre = "SELECT id_compte FROM t_compte WHERE id_compte = %(value_id_compte)s"
+                str_sql_id_genre = "SELECT * FROM t_compte WHERE id_compte = %(value_id_compte)s"
 
                 mydb_conn.execute(str_sql_id_genre, valeur_select_dictionnaire)
                 # Une seule valeur est suffisante "fetchone()",

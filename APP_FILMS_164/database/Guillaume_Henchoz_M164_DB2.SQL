@@ -24,14 +24,14 @@ USE `m164_guillaume_henchoz_db`;
 DROP TABLE IF EXISTS `t_compte`;
 CREATE TABLE IF NOT EXISTS `t_compte` (
   `ID_compte` int NOT NULL AUTO_INCREMENT,
-  `FK_statut_compte` int DEFAULT NULL,
-  `Identifiant_compte` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `Mot_de_passe` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `nom` varchar(50) DEFAULT NULL,
-  `prenom` varchar(50) DEFAULT NULL,
-  `mail` varchar(320) DEFAULT NULL,
+  `FK_statut_compte` int NOT NULL,
+  `Identifiant_compte` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Mot_de_passe` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `nom` varchar(50) NOT NULL,
+  `prenom` varchar(50) NOT NULL,
+  `mail` varchar(320) NOT NULL,
   `num_tel` INT(20) DEFAULT NULL,
-  `date_creation` timestamp NULL DEFAULT NULL,
+  `date_creation` timestamp NULL NOT NULL,
   PRIMARY KEY (`ID_compte`),
   KEY `FK_statut_compte` (`FK_statut_compte`),
   CONSTRAINT `FK_statut_compte` FOREIGN KEY (`FK_statut_compte`) REFERENCES `t_statut_compte` (`ID_statut_compte`)
@@ -50,35 +50,52 @@ INSERT INTO `t_compte` (`ID_compte`, `FK_statut_compte`, `Identifiant_compte`, `
 	(9, 2, '1118', 'imstupide', 'Leclerc', 'Charles', 'charles.leclerc@gmail.com', '078.456.12.32', '2024-02-28 09:51:30'),
 	(10, 2, '1119', 'itsfridaythen', 'Norris', 'Lando', 'lando.norris@f1.com', NULL, '2024-02-28 09:53:18');
 
+-- Listage de la structure de table m164_guillaume_henchoz_db. t_heure
+DROP TABLE IF EXISTS `t_heure`;
+CREATE TABLE IF NOT EXISTS `t_heure` (
+  `ID_heure` int NOT NULL AUTO_INCREMENT,
+  `heure_debut` time DEFAULT NULL,
+  `heure_fin` time DEFAULT NULL,
+  PRIMARY KEY (`ID_heure`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Listage des données de la table m164_guillaume_henchoz_db.t_heure : ~0 rows (environ)
+INSERT INTO `t_heure` (`ID_heure`, `heure_debut`, `heure_fin`) VALUES
+	(1, '08:00:00', '09:45:00'),
+	(2, '10:00:00', '11:45:00'),
+	(3, '13:00:00', '14:45:00'),
+	(4, '15:00:00', '16:45:00');
+
 -- Listage de la structure de table m164_guillaume_henchoz_db. t_reservation
 DROP TABLE IF EXISTS `t_reservation`;
 CREATE TABLE IF NOT EXISTS `t_reservation` (
   `ID_reservation` int NOT NULL AUTO_INCREMENT,
   `FK_statut_res` int DEFAULT NULL,
   `FK_compte` int DEFAULT NULL,
-  `date` date DEFAULT NULL,
-  `heure_debut` time DEFAULT NULL,
-  `heure_fin` time DEFAULT NULL,
-  `nombre` varchar(50) DEFAULT NULL,
-  `date_creation` timestamp NULL DEFAULT NULL,
+  `FK_heure` int DEFAULT NULL,
+  `date` date NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `date_creation` timestamp NULL NOT NULL,
   PRIMARY KEY (`ID_reservation`),
   KEY `FK_statut_res` (`FK_statut_res`),
   KEY `FK_compte` (`FK_compte`),
+  KEY `FK_heure` (`FK_heure`),
   CONSTRAINT `FK_compte` FOREIGN KEY (`FK_compte`) REFERENCES `t_compte` (`ID_compte`),
+  CONSTRAINT `FK_heure` FOREIGN KEY (`FK_heure`) REFERENCES `t_heure` (`ID_heure`),
   CONSTRAINT `FK_statut_res` FOREIGN KEY (`FK_statut_res`) REFERENCES `t_statut_res` (`ID_statut_res`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Listage des données de la table m164_guillaume_henchoz_db.t_reservation : ~9 rows (environ)
-INSERT INTO `t_reservation` (`ID_reservation`, `FK_statut_res`, `FK_compte`, `date`, `heure_debut`, `heure_fin`, `nombre`, `date_creation`) VALUES
-	(3, 1, 2, '2024-02-21', '08:00:00', '09:15:00', '23', '2024-02-21 09:59:05'),
-	(4, 2, 6, '2024-02-21', '09:30:00', '10:45:00', '19', '2024-02-21 09:59:48'),
-	(5, 2, 6, '2024-02-21', '11:00:00', '12:15:00', '20', '2024-02-21 10:01:13'),
-	(6, 1, 5, '2024-02-22', '08:00:00', '09:15:00', '17', '2024-02-21 10:04:35'),
-	(7, 3, NULL, '2024-02-22', '09:30:00', '10:45:00', NULL, NULL),
-	(8, 3, NULL, '2024-02-22', '11:00:00', '12:15:00', NULL, NULL),
-	(9, 1, 9, '2024-02-23', '08:00:00', '09:15:00', '24', '2024-02-28 09:55:15'),
-	(10, 2, 10, '2024-02-23', '09:30:00', '10:45:00', '25', '2024-02-28 09:56:04'),
-	(11, 3, NULL, '2024-02-23', '11:00:00', '12:15:00', NULL, NULL);
+INSERT INTO `t_reservation` (`ID_reservation`, `FK_statut_res`, `FK_compte`, `FK_heure`, `date`, `nombre`, `date_creation`) VALUES
+	(3, 1, 2, 1, '2024-02-21', '23', '2024-02-21 09:59:05'),
+	(4, 2, 6, 1, '2024-02-21', '19', '2024-02-21 09:59:48'),
+	(5, 2, 6, 1, '2024-02-21', '20', '2024-02-21 10:01:13'),
+	(6, 1, 5, 2, '2024-02-22', '17', '2024-02-21 10:04:35'),
+	(7, 3, NULL, 3, '2024-02-22', NULL, NULL),
+	(8, 3, NULL, 2, '2024-02-22', NULL, NULL),
+	(9, 1, 9, 3, '2024-02-23', '24', '2024-02-28 09:55:15'),
+	(10, 2, 10, 2, '2024-02-23', '25', '2024-02-28 09:56:04'),
+	(11, 3, NULL, 1, '2024-02-23', NULL, NULL);
 
 -- Listage de la structure de table m164_guillaume_henchoz_db. t_statut_compte
 DROP TABLE IF EXISTS `t_statut_compte`;

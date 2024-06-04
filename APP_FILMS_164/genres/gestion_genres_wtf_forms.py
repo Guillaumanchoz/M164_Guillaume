@@ -4,10 +4,11 @@
     Gestion des formulaires avec WTF
 """
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateField
+from wtforms import StringField, DateField, SelectField
 from wtforms import SubmitField
 from wtforms.validators import Length, InputRequired, DataRequired
 from wtforms.validators import Regexp
+
 
 
 class FormWTFAjouterGenres(FlaskForm):
@@ -73,8 +74,16 @@ class FormWTFAjouterGenres(FlaskForm):
                                                                 message="Pas de lettre")
                                                          ])
 
+    # statut_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
+    # statut_wtf = StringField("statut", validators=[Length(min=2, max=50, message="min 2 max 20"),
+    #                                                      Regexp(statut_regexp,
+    #                                                             message="Pas de chiffres, de caractères "
+    #                                                                     "spéciaux, "
+    #                                                                     "d'espace à double, de double "
+    #                                                                     "apostrophe, de double trait union")
+    #                                                      ])
 
-    submit = SubmitField("Enregistrer")
+    submit = SubmitField("Enregistrer le compte")
 
 
 class FormWTFUpdateGenre(FlaskForm):
@@ -82,16 +91,16 @@ class FormWTFUpdateGenre(FlaskForm):
         Dans le formulaire "genre_update_wtf.html" on impose que le champ soit rempli.
         Définition d'un "bouton" submit avec un libellé personnalisé.
     """
-    identifiant_update_regexp = r'^[a-zA-Z0-9]+$'
-    identifiant_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=2, max=50, message="min 2 max 20"),
-                                                                       Regexp(identifiant_update_regexp,
+    identifiant_compte_regexp = r'^[a-zA-Z0-9]+$'
+    identifiant_compte_wtf = StringField("identifiant ", validators=[Length(min=2, max=50, message="min 2 max 20"),
+                                                                       Regexp(identifiant_compte_regexp,
                                                                               message="pas de caractères "
                                                                                       "spéciaux, "
                                                                                       "pas d'espace")
                                                                        ])
-    mdp_update_regexp = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
-    mdp_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=2, max=30, message="min 2 max 20"),
-                                                                       Regexp(mdp_update_regexp,
+    mdp_regexp = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+    mdp_wtf = StringField("mot de passe ", validators=[Length(min=2, max=30, message="min 2 max 20"),
+                                                                       Regexp(mdp_regexp,
                                                                               message="Il faut au minimum : "
                                                                                         "1 lettre minuscule "
                                                                                         "1 lettre majuscule "
@@ -100,9 +109,9 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                         "Minimum 8 caractère")
                                                                        ])
 
-    nom_update_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
-    nom_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=2, max=50, message="min 2 max 20"),
-                                                                       Regexp(nom_update_regexp,
+    nom_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
+    nom_wtf = StringField("nom", validators=[Length(min=2, max=50, message="min 2 max 20"),
+                                                                       Regexp(nom_regexp,
                                                                               message="Pas de chiffres, de "
                                                                                       "caractères "
                                                                                       "spéciaux, "
@@ -111,9 +120,9 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                       "union")
                                                                        ])
 
-    prenom_update_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
-    prenom_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=2, max=50, message="min 2 max 20"),
-                                                                          Regexp(prenom_update_regexp,
+    prenom_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
+    prenom_wtf = StringField("prénom", validators=[Length(min=2, max=50, message="min 2 max 20"),
+                                                                          Regexp(prenom_regexp,
                                                                                  message="Pas de chiffres, de "
                                                                                          "caractères "
                                                                                          "spéciaux, "
@@ -122,9 +131,9 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                          "union")
                                                                           ])
 
-    mail_update_regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-    mail_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=4, max=320, message="min 2 max 20"),
-                                                                       Regexp(mail_update_regexp,
+    mail_regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    mail_wtf = StringField("mail", validators=[Length(min=4, max=320, message="min 2 max 20"),
+                                                                       Regexp(mail_regexp,
                                                                               message="Pas de chiffres, de "
                                                                                       "caractères "
                                                                                       "spéciaux, "
@@ -133,11 +142,13 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                       "union")
                                                                        ])
 
-    num_tel_update_regexp = "^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
-    num_tel_update_wtf = StringField("Modifier les éléments ", validators=[Length(min=9, max=50, message="min 2 max 20"),
-                                                                       Regexp(num_tel_update_regexp,
+    num_tel_regexp = "^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
+    num_tel_wtf = StringField("numéro de téléphone ", validators=[Length(min=9, max=50, message="min 2 max 20"),
+                                                                       Regexp(num_tel_regexp,
                                                                               message="Pas de lettre")
                                                                        ])
+
+
 
     date_wtf_essai = DateField("Essai date", validators=[InputRequired("Date obligatoire"),
                                                                DataRequired("Date non valide")])

@@ -4,10 +4,14 @@ Auteur : OM 2022.04.11
 """
 from pathlib import Path
 
+from datetime import datetime
+import pymysql.cursors
+
 from flask import redirect
 from flask import request
 from flask import session
 from flask import url_for
+from werkzeug.security import check_password_hash
 
 from APP_FILMS_164.database.database_tools import DBconnection
 from APP_FILMS_164.erreurs.exceptions import *
@@ -35,20 +39,75 @@ def film_add_wtf():
     if request.method == "POST":
         try:
             if form_add_film.validate_on_submit():
-                nom_film_add = form_add_film.nom_film_add_wtf.data
 
-                valeurs_insertion_dictionnaire = {"value_nom_film": nom_film_add}
+                statut = 1
+                username = form_add_film.username.data
+                password = form_add_film.password.data
+                heure = form_add_film.heure_add_wtf.data
+                date = form_add_film.date_add_wtf.data
+                nombre = form_add_film.nombre_add_wtf.data
+                id_heure = 0
+                compte_id = 0
+
+                valeurs_insertion_dictionnaire = {"value_statut": statut,
+                                                  "value_user": username,
+                                                  "value_mdp": password,
+                                                  "value_heure": heure,
+                                                  "value_date": date,
+                                                  "value_nombre": nombre,
+                                                  "value_id_heure": id_heure,
+                                                  "value_compte_id": compte_id
+                                                  }
                 print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
-                strsql_insert_film = """INSERT INTO t_film (id_film,nom_film) VALUES (NULL,%(value_nom_film)s) """
+
+                strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
+                strsql_compte_id = """SELECT ID_compte FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
+                strsql_id_heure = """SELECT ID_heure FROM t_heure WHERE heure = %(value_heure)s """
+
+                date = datetime.today().strftime("%Y-%m-%d")
+
+                strsql_reservation = """INSERT INTO t_reservation (id_reservation, FK_statut_res, FK_compte, FK_heure, date, nombre, date_creation) VALUES (NULL, %(value_statut)s, %(value_compte_id)s, %(value_id_heure)s, %(value_date)s, %(value_nombre)s, %(date_creation)s) """
+
+                valeurs_insertion_dictionnaire["date_creation"] = date
+
                 with DBconnection() as mconn_bd:
-                    mconn_bd.execute(strsql_insert_film, valeurs_insertion_dictionnaire)
 
-                flash(f"Données insérées !!", "success")
-                print(f"Données insérées !!")
+                    mconn_bd.execute(strsql_get_password, valeurs_insertion_dictionnaire)
+                    check_mdp_dict = mconn_bd.fetchone()
+                    check_mdp = check_mdp_dict.get("Mot_de_passe")
 
-                # Pour afficher et constater l'insertion du nouveau film (id_film_sel=0 => afficher tous les films)
-                return redirect(url_for('films_genres_afficher', id_film_sel=0))
+                    print(f"pwd: {password} / check_mdp: {check_mdp}")
+
+                    if password == check_mdp:
+                        mconn_bd.execute(strsql_compte_id, valeurs_insertion_dictionnaire)
+                        check_compte_dict = mconn_bd.fetchone()
+                        check_compte = check_compte_dict.get("ID_compte")
+
+                        print(f"check_compte : {check_compte}")
+                        valeurs_insertion_dictionnaire["value_compte_id"] = check_compte
+
+                        # Récupérer l'ID de l'heure à partir de la base de données
+                        mconn_bd.execute(strsql_id_heure, valeurs_insertion_dictionnaire)
+                        check_heure_dict = mconn_bd.fetchone()
+                        check_heure = check_heure_dict.get("ID_heure")
+
+                        print(f"heure : {heure} / heureid : {check_heure}")
+                        valeurs_insertion_dictionnaire["value_id_heure"] = check_heure
+
+
+                        mconn_bd.execute(strsql_reservation, valeurs_insertion_dictionnaire)
+
+                        flash(f"Données insérées !!", "success")
+                        print(f"Données insérées !!")
+
+                        # Pour afficher et constater l'insertion du nouveau film (id_reservation_sel=0 => afficher tous les films)
+                        return redirect(url_for('reservation_afficher', id_reservation_sel=0))
+
+                    else:
+                        flash("Aucun mot de passe trouvé pour cet utilisateur.", "danger")
+                        flash("Mot de passe incorrect", "danger")
+                        flash("Aucune heure correspondante trouvée dans la base de données.", "danger")
 
         except Exception as Exception_genres_ajouter_wtf:
             raise ExceptionGenresAjouterWtf(f"fichier : {Path(__file__).name}  ;  "
@@ -58,7 +117,15 @@ def film_add_wtf():
     return render_template("films/film_add_wtf.html", form_add_film=form_add_film)
 
 
-"""Editer(update) un film qui a été sélectionné dans le formulaire "films_genres_afficher.html"
+
+
+
+
+
+
+
+
+"""Editer(update) un film qui a été sélectionné dans le formulaire "reservation_afficher.html"
 Auteur : OM 2022.04.11
 Définition d'une "route" /film_update
 
@@ -85,27 +152,33 @@ def film_update_wtf():
         # 2023.05.14 OM S'il y a des listes déroulantes dans le formulaire
         # La validation pose quelques problèmes
         if request.method == "POST" and form_update_film.submit.data:
-            # Récupèrer la valeur du champ depuis "genre_update_wtf.html" après avoir cliqué sur "SUBMIT".
-            nom_film_update = form_update_film.nom_film_update_wtf.data
-            duree_film_update = form_update_film.duree_film_update_wtf.data
-            description_film_update = form_update_film.description_film_update_wtf.data
-            cover_link_film_update = form_update_film.cover_link_film_update_wtf.data
-            datesortie_film_update = form_update_film.datesortie_film_update_wtf.data
 
-            valeur_update_dictionnaire = {"value_id_film": id_film_update,
-                                          "value_nom_film": nom_film_update,
-                                          "value_duree_film": duree_film_update,
-                                          "value_description_film": description_film_update,
-                                          "value_cover_link_film": cover_link_film_update,
-                                          "value_datesortie_film": datesortie_film_update
-                                          }
+            statut = 1
+            username = form_update_film.username.data
+            password = form_update_film.password.data
+            heure = form_update_film.heure_add_wtf.data
+            date = form_update_film.date_add_wtf.data
+            nombre = form_update_film.nombre_add_wtf.data
+            id_heure = 0
+            compte_id = 0
+
+            valeur_update_dictionnaire = {"value_statut": statut,
+                                                  "value_user": username,
+                                                  "value_mdp": password,
+                                                  "value_heure": heure,
+                                                  "value_date": date,
+                                                  "value_nombre": nombre,
+                                                  "value_id_heure": id_heure,
+                                                  "value_compte_id": compte_id
+                                                  }
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
-            str_sql_update_nom_film = """UPDATE t_film SET nom_film = %(value_nom_film)s,
-                                                            duree_film = %(value_duree_film)s,
-                                                            description_film = %(value_description_film)s,
-                                                            cover_link_film = %(value_cover_link_film)s,
-                                                            date_sortie_film = %(value_datesortie_film)s
+            str_sql_update_nom_film = """UPDATE t_reservation SET FK_statut-res = %(value_statut)s,
+                                                            FK_compte = %(value_id_heure)s,
+                                                            FK_heure = %(value_description_film)s,
+                                                            date = %(value_date)s,
+                                                            nombre = %(value_nombre)s, 
+                                                            date_creation = %(date_creation)s
                                                             WHERE id_film = %(value_id_film)s"""
             with DBconnection() as mconn_bd:
                 mconn_bd.execute(str_sql_update_nom_film, valeur_update_dictionnaire)
@@ -115,7 +188,7 @@ def film_update_wtf():
 
             # afficher et constater que la donnée est mise à jour.
             # Afficher seulement le film modifié, "ASC" et l'"id_film_update"
-            return redirect(url_for('films_genres_afficher', id_film_sel=id_film_update))
+            return redirect(url_for('reservation_afficher', id_reservation_sel=id_film_update))
         elif request.method == "GET":
             # Opération sur la BD pour récupérer "id_film" et "intitule_genre" de la "t_genre"
             str_sql_id_film = "SELECT * FROM t_film WHERE id_film = %(value_id_film)s"
@@ -144,7 +217,7 @@ def film_update_wtf():
     return render_template("films/film_update_wtf.html", form_update_film=form_update_film)
 
 
-"""Effacer(delete) un film qui a été sélectionné dans le formulaire "films_genres_afficher.html"
+"""Effacer(delete) un film qui a été sélectionné dans le formulaire "reservation_afficher.html"
 Auteur : OM 2022.04.11
 Définition d'une "route" /film_delete
     
@@ -170,7 +243,7 @@ def film_delete_wtf():
     try:
         # Si on clique sur "ANNULER", afficher tous les films.
         if form_delete_film.submit_btn_annuler.data:
-            return redirect(url_for("films_genres_afficher", id_film_sel=0))
+            return redirect(url_for("reservation_afficher", id_reservation_sel=0))
 
         if form_delete_film.submit_btn_conf_del_film.data:
             # Récupère les données afin d'afficher à nouveau
@@ -200,7 +273,7 @@ def film_delete_wtf():
             print(f"Film définitivement effacé !!")
 
             # afficher les données
-            return redirect(url_for('films_genres_afficher', id_film_sel=0))
+            return redirect(url_for('reservation_afficher', id_reservation_sel=0))
         if request.method == "GET":
             valeur_select_dictionnaire = {"value_id_film": id_film_delete}
             print(id_film_delete, type(id_film_delete))
