@@ -46,8 +46,8 @@ def film_add_wtf():
                 heure = form_add_film.heure_add_wtf.data
                 date = form_add_film.date_add_wtf.data
                 nombre = form_add_film.nombre_add_wtf.data
-                id_heure = 0
                 compte_id = 0
+
 
                 valeurs_insertion_dictionnaire = {"value_statut": statut,
                                                   "value_user": username,
@@ -55,19 +55,17 @@ def film_add_wtf():
                                                   "value_heure": heure,
                                                   "value_date": date,
                                                   "value_nombre": nombre,
-                                                  "value_id_heure": id_heure,
-                                                  "value_compte_id": compte_id
+                                                  "value_compte_id": compte_id,
                                                   }
-                print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
-
 
                 strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
                 strsql_compte_id = """SELECT ID_compte FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
-                strsql_id_heure = """SELECT ID_heure FROM t_heure WHERE heure = %(value_heure)s """
+                #strsql_id_heure = """SELECT ID_heure FROM t_heure WHERE heure = %(value_heure)s """
 
                 date = datetime.today().strftime("%Y-%m-%d")
+                print(f"heure : {heure}")
+                strsql_reservation = """INSERT INTO t_reservation (id_reservation, FK_statut_res, FK_compte, FK_heure, date, nombre, date_creation) VALUES (NULL, %(value_statut)s, %(value_compte_id)s, %(value_heure)s, %(value_date)s, %(value_nombre)s, %(date_creation)s) """
 
-                strsql_reservation = """INSERT INTO t_reservation (id_reservation, FK_statut_res, FK_compte, FK_heure, date, nombre, date_creation) VALUES (NULL, %(value_statut)s, %(value_compte_id)s, %(value_id_heure)s, %(value_date)s, %(value_nombre)s, %(date_creation)s) """
 
                 valeurs_insertion_dictionnaire["date_creation"] = date
 
@@ -77,26 +75,16 @@ def film_add_wtf():
                     check_mdp_dict = mconn_bd.fetchone()
                     check_mdp = check_mdp_dict.get("Mot_de_passe")
 
-                    print(f"pwd: {password} / check_mdp: {check_mdp}")
-
                     if password == check_mdp:
                         mconn_bd.execute(strsql_compte_id, valeurs_insertion_dictionnaire)
                         check_compte_dict = mconn_bd.fetchone()
                         check_compte = check_compte_dict.get("ID_compte")
 
-                        print(f"check_compte : {check_compte}")
                         valeurs_insertion_dictionnaire["value_compte_id"] = check_compte
 
-                        # Récupérer l'ID de l'heure à partir de la base de données
-                        mconn_bd.execute(strsql_id_heure, valeurs_insertion_dictionnaire)
-                        check_heure_dict = mconn_bd.fetchone()
-                        check_heure = check_heure_dict.get("ID_heure")
-
-                        print(f"heure : {heure} / heureid : {check_heure}")
-                        valeurs_insertion_dictionnaire["value_id_heure"] = check_heure
-
-
                         mconn_bd.execute(strsql_reservation, valeurs_insertion_dictionnaire)
+
+                        print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
                         flash(f"Données insérées !!", "success")
                         print(f"Données insérées !!")
@@ -118,13 +106,6 @@ def film_add_wtf():
 
 
 
-
-
-
-
-
-
-
 """Editer(update) un film qui a été sélectionné dans le formulaire "reservation_afficher.html"
 Auteur : OM 2022.04.11
 Définition d'une "route" /film_update
@@ -141,10 +122,10 @@ Remarque :  Dans le champ "nom_film_update_wtf" du formulaire "films/films_updat
 """
 
 
-@app.route("/film_update", methods=['GET', 'POST'])
+@app.route("/id_reservation_update", methods=['GET', 'POST'])
 def film_update_wtf():
     # L'utilisateur vient de cliquer sur le bouton "EDIT". Récupère la valeur de "id_film"
-    id_film_update = request.values['id_film_btn_edit_html']
+    id_reservation_update = request.values['id_film_btn_edit_html']
 
     # Objet formulaire pour l'UPDATE
     form_update_film = FormWTFUpdateFilm()
@@ -152,18 +133,18 @@ def film_update_wtf():
         # 2023.05.14 OM S'il y a des listes déroulantes dans le formulaire
         # La validation pose quelques problèmes
         if request.method == "POST" and form_update_film.submit.data:
+            print("bienvenue2.5")
 
-            statut = 1
             username = form_update_film.username.data
             password = form_update_film.password.data
-            heure = form_update_film.heure_add_wtf.data
-            date = form_update_film.date_add_wtf.data
-            nombre = form_update_film.nombre_add_wtf.data
+            heure = form_update_film.heure_update_wtf.data
+            date = form_update_film.date_update_wtf.data
+            nombre = form_update_film.nombre_update_wtf.data
             id_heure = 0
             compte_id = 0
 
-            valeur_update_dictionnaire = {"value_statut": statut,
-                                                  "value_user": username,
+            print("bienvenue3")
+            valeur_update_dictionnaire = {        "value_user": username,
                                                   "value_mdp": password,
                                                   "value_heure": heure,
                                                   "value_date": date,
@@ -171,43 +152,79 @@ def film_update_wtf():
                                                   "value_id_heure": id_heure,
                                                   "value_compte_id": compte_id
                                                   }
+            print("bienvenue4")
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
-            str_sql_update_nom_film = """UPDATE t_reservation SET FK_statut-res = %(value_statut)s,
-                                                            FK_compte = %(value_id_heure)s,
-                                                            FK_heure = %(value_description_film)s,
-                                                            date = %(value_date)s,
-                                                            nombre = %(value_nombre)s, 
-                                                            date_creation = %(date_creation)s
-                                                            WHERE id_film = %(value_id_film)s"""
-            with DBconnection() as mconn_bd:
-                mconn_bd.execute(str_sql_update_nom_film, valeur_update_dictionnaire)
+            strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
+            strsql_id_heure = """SELECT ID_heure FROM t_heure WHERE heure = %(value_heure)s """
+            strsql_update_reservation = """UPDATE t_reservation SET FK_heure = %(value_id_heure)s,
+                                                                date = %(value_date)s,
+                                                                nombre = %(value_nombre)s, 
+                                                                date_creation = %(date_creation)s
+                                                                WHERE ID_reservation = %(value_id_reservation)s"""
 
-            flash(f"Donnée mise à jour !!", "success")
-            print(f"Donnée mise à jour !!")
+            valeur_update_dictionnaire["date_creation"] = date
+
+            with DBconnection() as mconn_bd:
+
+                mconn_bd.execute(strsql_get_password, valeur_update_dictionnaire)
+                check_mdp_dict = mconn_bd.fetchone()
+                check_mdp = check_mdp_dict.get("Mot_de_passe")
+
+                print(f"pwd: {password} / check_mdp: {check_mdp}")
+
+                if password == check_mdp:
+                    # Récupérer l'ID de l'heure à partir de la base de données
+                    mconn_bd.execute(strsql_id_heure, valeur_update_dictionnaire)
+                    check_heure_dict = mconn_bd.fetchone()
+                    check_heure = check_heure_dict.get("ID_heure")
+
+                    print(f"heure : {heure} / heureid : {check_heure}")
+                    valeur_update_dictionnaire["value_id_heure"] = check_heure
+
+                    mconn_bd.execute(strsql_update_reservation, valeur_update_dictionnaire)
+
+                    flash(f"Données modifiées !!", "success")
+                    print(f"Données modifiées !!")
+
+                    # Pour afficher et constater l'insertion du nouveau film (id_reservation_sel=0 => afficher tous les films)
+                    return redirect(url_for('reservation_afficher', id_reservation_sel=0))
+                    return redirect(url_for('films_genres_afficher', id_film_sel=id_reservation_update))
+
+                else:
+                    flash("Aucun mot de passe trouvé pour cet utilisateur.", "danger")
+                    flash("Mot de passe incorrect", "danger")
+                    flash("Aucune heure correspondante trouvée dans la base de données.", "danger")
+
+                print(f"Donnée mise à jour !!")
 
             # afficher et constater que la donnée est mise à jour.
-            # Afficher seulement le film modifié, "ASC" et l'"id_film_update"
-            return redirect(url_for('reservation_afficher', id_reservation_sel=id_film_update))
-        elif request.method == "GET":
-            # Opération sur la BD pour récupérer "id_film" et "intitule_genre" de la "t_genre"
-            str_sql_id_film = "SELECT * FROM t_film WHERE id_film = %(value_id_film)s"
-            valeur_select_dictionnaire = {"value_id_film": id_film_update}
-            with DBconnection() as mybd_conn:
-                mybd_conn.execute(str_sql_id_film, valeur_select_dictionnaire)
-            # Une seule valeur est suffisante "fetchone()", vu qu'il n'y a qu'un seul champ "nom genre" pour l'UPDATE
-            data_film = mybd_conn.fetchone()
-            print("data_film ", data_film, " type ", type(data_film), " genre ",
-                  data_film["nom_film"])
+            # Afficher seulement le film modifié, "ASC" et l'"id_reservation_update"
+            return redirect(url_for('reservation_afficher', id_reservation_sel=id_reservation_update))
 
-            # Afficher la valeur sélectionnée dans le champ du formulaire "film_update_wtf.html"
-            form_update_film.nom_film_update_wtf.data = data_film["nom_film"]
-            form_update_film.duree_film_update_wtf.data = data_film["duree_film"]
-            # Debug simple pour contrôler la valeur dans la console "run" de PyCharm
-            print(f" duree film  ", data_film["duree_film"], "  type ", type(data_film["duree_film"]))
-            form_update_film.description_film_update_wtf.data = data_film["description_film"]
-            form_update_film.cover_link_film_update_wtf.data = data_film["cover_link_film"]
-            form_update_film.datesortie_film_update_wtf.data = data_film["date_sortie_film"]
+        elif request.method == "GET":
+            print("bienvenue")
+            # Opération sur la BD pour récupérer "id_film" et "intitule_genre" de la "t_genre"
+            strsql_id_reservation = """SELECT ID_reservation, Identifiant_compte, Mot_de_passe, FK_heure, date, nombre FROM t_reservation r
+                                        INNER JOIN t_compte c ON c.id_compte = r.FK_compte
+                                        INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
+                                        WHERE ID_reservation = %(value_id_reservation)s """
+            valeur_select_dictionnaire = {"value_id_reservation": id_reservation_update}
+
+            print("valeur_select_dictionnaire ", valeur_select_dictionnaire)
+
+
+            with DBconnection() as mybd_conn:
+                mybd_conn.execute(strsql_id_reservation, valeur_select_dictionnaire)
+                data_reservation = mybd_conn.fetchone()
+
+            form_update_film.username.data = data_reservation["Identifiant_compte"]
+            form_update_film.password.data = data_reservation["Mot_de_passe"]
+            form_update_film.date_update_wtf.data = data_reservation["date"]
+            form_update_film.heure_update_wtf.data = data_reservation["FK_heure"]
+            form_update_film.nombre_update_wtf.data = data_reservation["nombre"]
+
+            print(f"valeur_data_reservation : {data_reservation}")
 
     except Exception as Exception_film_update_wtf:
         raise ExceptionFilmUpdateWtf(f"fichier : {Path(__file__).name}  ;  "
@@ -215,6 +232,8 @@ def film_update_wtf():
                                      f"{Exception_film_update_wtf}")
 
     return render_template("films/film_update_wtf.html", form_update_film=form_update_film)
+
+
 
 
 """Effacer(delete) un film qui a été sélectionné dans le formulaire "reservation_afficher.html"

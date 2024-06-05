@@ -29,10 +29,10 @@ class FormWTFAddFilm(FlaskForm):
 
 
     heure_add_wtf = SelectField("heure", choices=[
-        ("8h00 - 9h45"),
-        ("10h00 - 11h45"),
-        ("13h00 - 14h45"),
-        ("15h00 - 16h45")
+        (1, "8h00 - 9h45"),
+        (2, "10h00 - 11h45"),
+        (3, "13h00 - 14h45"),
+        (4, "15h00 - 16h45")
     ], validators=[DataRequired()])
 
     nombre_regexp = "^(?:[1-9]|[1-4][0-9]|50)$"
@@ -62,14 +62,13 @@ class FormWTFUpdateFilm(FlaskForm):
                                                         ])
 
     heure_update_wtf = SelectField("heure", choices=[
-
-        ('1', "8h00 - 9h45"),
-        ('2', '10h00 - 11h45'),
-        ('3', '13h00 - 14h45'),
-        ('4', '15h00 - 16h45')
+        (1, "8h00 - 9h45"),
+        (2, "10h00 - 11h45"),
+        (3, "13h00 - 14h45"),
+        (4, "15h00 - 16h45")
     ], validators=[DataRequired()])
 
-    submit = SubmitField("Update film")
+    submit = SubmitField("Enregistrer")
 
 
 class FormWTFDeleteFilm(FlaskForm):

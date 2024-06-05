@@ -32,10 +32,10 @@ def reservation_afficher(id_reservation_sel):
     if request.method == "GET":
         try:
             with DBconnection() as mc_afficher:
-                strsql_reservation_afficher_data = """SELECT nom, date, heure, etat, r.nombre FROM t_reservation r
+                strsql_reservation_afficher_data = """SELECT ID_reservation, nom, date, heure, etat, r.nombre FROM t_reservation r
                                                             INNER JOIN t_compte c ON c.id_compte = r.FK_compte
                                                             INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
-                                                            LEFT JOIN t_heure h ON h.id_heure = r.FK_heure
+                                                            INNER JOIN t_heure h ON h.id_heure = r.FK_heure
                                                             ORDER BY date"""
                 if id_reservation_sel == 0:
                     # le paramètre 0 permet d'afficher tous les films
