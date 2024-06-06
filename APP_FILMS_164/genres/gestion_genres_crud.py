@@ -121,21 +121,26 @@ def genres_ajouter_wtf():
 
                 print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
-                date = datetime.today().strftime("%Y-%m-%d")
+                date_creation = datetime.today().strftime("%Y-%m-%d")
 
+                strsql_check_identifiant = """SELECT COUNT(*) FROM t_compte WHERE Identifiant_compte = %(value_Identifiant_compte)s"""
                 strsql_insert_genre = """INSERT INTO t_compte (ID_compte,FK_statut_compte,Identifiant_compte,Mot_de_passe,nom,prenom,mail,num_tel,date_creation) VALUES (NULL,%(value_statut)s,%(value_Identifiant_compte)s,%(value_mdp)s,%(value_intitule_genre)s,%(value_prenom)s,%(value_mail)s,%(value_num_tel)s,%(date_creation)s)"""
 
-                valeurs_insertion_dictionnaire["date_creation"] = date
+                valeurs_insertion_dictionnaire["date_creation"] = date_creation
 
                 with DBconnection() as mconn_bd:
-                    mconn_bd.execute(strsql_insert_genre, valeurs_insertion_dictionnaire)
+                    mconn_bd.execute(strsql_check_identifiant, valeurs_insertion_dictionnaire)
+                    count_identifiant = mconn_bd.fetchone()['COUNT(*)']
 
+                    if count_identifiant > 0:
+                        flash("Cet identifiant existe déjà, veuillez en choisir un autre.", "danger")
+                    else:
+                        mconn_bd.execute(strsql_insert_genre, valeurs_insertion_dictionnaire)
+                        flash(f"Données insérées !!", "success")
+                        print(f"Données insérées !!")
 
-                flash(f"Données insérées !!", "success")
-                print(f"Données insérées !!")
-
-                # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
-                return redirect(url_for('genres_afficher', order_by='ASC', id_genre_sel=0))
+                        # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
+                        return redirect(url_for('genres_afficher', order_by='ASC', id_genre_sel=0))
 
             else:
                 for field, errors in form.errors.items():

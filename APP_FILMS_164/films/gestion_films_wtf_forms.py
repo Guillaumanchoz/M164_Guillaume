@@ -20,7 +20,12 @@ class FormWTFAddFilm(FlaskForm):
         Définition d'un "bouton" submit avec un libellé personnalisé.
     """
 
-    username = StringField('Identifiant', validators=[DataRequired()])
+    username_regexp = "^[a-zA-Z0-9]{4,20}$"
+    username = StringField('Identifiant', validators=[Length(min=4, max=20, message="min 4 max 20"),
+                                                               Regexp(username_regexp,
+                                                                      message="min 4 , max 20 caractère "
+                                                                              "uniquement des lettres et des chiffres ")
+                                                               ])
     password = PasswordField('Mot de passe', validators=[DataRequired(message="Il manque le mot de passe !!!")])
 
 
@@ -35,8 +40,8 @@ class FormWTFAddFilm(FlaskForm):
         (4, "15h00 - 16h45")
     ], validators=[DataRequired()])
 
-    nombre_regexp = "^(?:[1-9]|[1-4][0-9]|50)$"
-    nombre_add_wtf = StringField("Nombre ", validators=[Length(min=1, max=50, message="min 1 max 50"),
+    nombre_regexp = "^([1-4][0-9]|50)$"
+    nombre_add_wtf = StringField("Nombre ", validators=[Length(min=1, max=2, message="min 1 max 50"),
                                                                Regexp(nombre_regexp,
                                                                       message="uniquement des chiffres entre 1 et 50 ")
                                                                ])
@@ -49,15 +54,20 @@ class FormWTFUpdateFilm(FlaskForm):
         Dans le formulaire "film_update_wtf.html" on impose que le champ soit rempli.
         Définition d'un "bouton" submit avec un libellé personnalisé.
     """
-    username = StringField('Identifiant', validators=[DataRequired()])
+    username_update_regexp = "^[a-zA-Z0-9]{4,20}$"
+    username = StringField('Identifiant', validators=[Length(min=4, max=20, message="min 4 max 20"),
+                                                      Regexp(username_update_regexp,
+                                                             message="min 4 , max 20 caractère "
+                                                                     "uniquement des lettres et des chiffres ")
+                                                      ])
     password = PasswordField('Mot de passe', validators=[DataRequired(message="Il manque le mot de passe !!!")])
 
     date_update_wtf = DateField("Date de la réservation", validators=[InputRequired("Date obligatoire"),
                                                                    DataRequired("Date non valide")])
 
-    nombre_regexp = "^(?:[1-9]|[1-4][0-9]|50)$"
-    nombre_update_wtf = StringField("Nombre ", validators=[Length(min=1, max=50, message="min 1 max 50"),
-                                                        Regexp(nombre_regexp,
+    nombre_update_regexp = "^([1-4][0-9]|50)$"
+    nombre_update_wtf = StringField("Nombre ", validators=[Length(min=1, max=2, message="min 1 max 50"),
+                                                        Regexp(nombre_update_regexp,
                                                                message="uniquement des chiffres entre 1 et 50 ")
                                                         ])
 

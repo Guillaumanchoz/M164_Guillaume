@@ -26,27 +26,23 @@ from APP_FILMS_164.erreurs.exceptions import *
 """
 
 
-@app.route("/reservation_afficher/<int:id_reservation_sel>", methods=['GET', 'POST'])
-def reservation_afficher(id_reservation_sel):
-    print(" reservation_afficher id_reservation_sel ", id_reservation_sel)
+@app.route("/reservation_afficher/<int:id_film_sel>", methods=['GET', 'POST'])
+def reservation_afficher(id_film_sel):
+    print(" reservation_afficher id_film_sel ", id_film_sel)
     if request.method == "GET":
         try:
             with DBconnection() as mc_afficher:
-                strsql_reservation_afficher_data = """SELECT ID_reservation, nom, date, heure, etat, r.nombre FROM t_reservation r
+
+                strsql_reservation_afficher_data = """SELECT ID_reservation, nom, prenom, date, heure, etat, r.nombre FROM t_reservation r
                                                             INNER JOIN t_compte c ON c.id_compte = r.FK_compte
                                                             INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
                                                             INNER JOIN t_heure h ON h.id_heure = r.FK_heure
                                                             ORDER BY date"""
-                if id_reservation_sel == 0:
-                    # le paramètre 0 permet d'afficher tous les films
-                    # Sinon le paramètre représente la valeur de l'id du film
+
+                if id_film_sel == 0:
                     mc_afficher.execute(strsql_reservation_afficher_data)
                 else:
-                    # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-                    valeur_id_reservation_selected_dictionnaire = {"value_id_reservation_selected": id_reservation_sel}
-                    # En MySql l'instruction HAVING fonctionne comme un WHERE... mais doit être associée à un GROUP BY
-                    # L'opérateur += permet de concaténer une nouvelle valeur à la valeur de gauche préalablement définie.
-                    strsql_reservation_afficher_data += """ HAVING id_reservation = %(value_id_reservation_selected)s"""
+                    valeur_id_reservation_selected_dictionnaire = {"value_id_film_selected": id_film_sel}
 
                     mc_afficher.execute(strsql_reservation_afficher_data, valeur_id_reservation_selected_dictionnaire)
 
@@ -55,13 +51,14 @@ def reservation_afficher(id_reservation_sel):
                 print("data_genres ", data_reservation_afficher, " Type : ", type(data_reservation_afficher))
 
                 # Différencier les messages.
-                if not data_reservation_afficher and id_reservation_sel == 0:
+                if not data_reservation_afficher and id_film_sel == 0:
                     flash("""La table "t_film" est vide. !""", "warning")
-                elif not data_reservation_afficher and id_reservation_sel > 0:
+                elif not data_reservation_afficher and id_film_sel > 0:
                     # Si l'utilisateur change l'id_film dans l'URL et qu'il ne correspond à aucun film
-                    flash(f"La reservation {id_reservation_sel} demandé n'existe pas !!", "warning")
+                    flash(f"La reservation {id_film_sel} demandé n'existe pas !!", "warning")
                 else:
-                    flash(f"affiché !!", "success")
+                    None
+
 
         except Exception as Exception_reservation_afficher:
             raise ExceptionFilmsGenresAfficher(f"fichier : {Path(__file__).name}  ;  {reservation_afficher.__name__} ;"
@@ -93,7 +90,7 @@ def modifier_reservation():
     if request.method == "GET":
         try:
             with DBconnection() as mc_afficher:
-                strsql_genres_afficher = """SELECT id_compte, nom, date, heure, etat  FROM t_reservation
+                strsql_genres_afficher = """SELECT id_compte, nom, prenom, date, heure, etat  FROM t_reservation
                                                             INNER JOIN t_compte ON id_compte = FK_compte
                                                             INNER JOIN t_statut_res ON id_statut_res = FK_statut_res
                                                             LEFT JOIN t_heure ON id_heure = FK_heure
@@ -263,7 +260,7 @@ def update_genre_film_selected():
 
     # Après cette mise à jour de la table intermédiaire "t_genre_film",
     # on affiche les films et le(urs) genre(s) associé(s).
-    return redirect(url_for('reservation_afficher', id_reservation_sel=id_film_selected))
+    return redirect(url_for('reservation_afficher', id_film_sel=id_film_selected))
 
 
 """
