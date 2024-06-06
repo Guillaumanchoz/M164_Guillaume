@@ -46,9 +46,7 @@ class FormWTFAjouterGenres(FlaskForm):
                                                                                   "apostrophe, de double trait union")
                                                                    ])
 
-    '''Dans le formulaire "genres_ajouter_wtf.html" on impose que le champ soit rempli.
-            Définition d'un "bouton" submit avec un libellé personnalisé.
-        """ '''
+
 
     prenom_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
     prenom_wtf = StringField("Prénom", validators=[Length(min=2, max=50, message="min 2 max 20"),
@@ -59,29 +57,30 @@ class FormWTFAjouterGenres(FlaskForm):
                                                                         "apostrophe, de double trait union")
                                                          ])
 
-    mail_regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    mail_regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$"
     mail_wtf = StringField("mail", validators=[Length(min=4, max=320, message="min 2 max 50"),
                                                          Regexp(mail_regexp,
-                                                                message="Pas de chiffres, de caractères "
-                                                                        "spéciaux, "
-                                                                        "d'espace à double, de double "
-                                                                        "apostrophe, de double trait union")
+                                                                message="exemple attendu -> test.test@gmail.com ,"
+                                                                                      " de "
+                                                                                      "caractères "
+                                                                                      "spéciaux, "
+                                                                                      "d'espace à double, de double "
+                                                                                      "apostrophe, de double trait "
+                                                                                      "union")
                                                          ])
 
-    num_tel_regexp = "^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
-    num_tel_wtf = StringField("numéro de téléphone", validators=[Length(min=2, max=50, message="min 2 max 20"),
+    num_tel_regexp = "^0[1-9][0-9](\.\d{3})(\.\d{2}){2}$"
+    num_tel_wtf = StringField("numéro de téléphone", validators=[Length(min=10, max=50, message="min 2 max 20"),
                                                          Regexp(num_tel_regexp,
-                                                                message="Pas de lettre")
+                                                                message="Uniquement cette topologie est accépter : "
+                                                                        "076.123.12.12")
                                                          ])
 
-    # statut_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
-    # statut_wtf = StringField("statut", validators=[Length(min=2, max=50, message="min 2 max 20"),
-    #                                                      Regexp(statut_regexp,
-    #                                                             message="Pas de chiffres, de caractères "
-    #                                                                     "spéciaux, "
-    #                                                                     "d'espace à double, de double "
-    #                                                                     "apostrophe, de double trait union")
-    #                                                      ])
+
+    '''Dans le formulaire "genres_ajouter_wtf.html" on impose que le champ soit rempli.
+            Définition d'un "bouton" submit avec un libellé personnalisé.
+        """ '''
+
 
     submit = SubmitField("Enregistrer le compte")
 
@@ -131,10 +130,11 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                          "union")
                                                                           ])
 
-    mail_regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    mail_regexp = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;"
     mail_wtf = StringField("mail", validators=[Length(min=4, max=320, message="min 2 max 20"),
                                                                        Regexp(mail_regexp,
-                                                                              message="Pas de chiffres, de "
+                                                                              message="exemple attendu -> test.test@gmail.com"
+                                                                                      "Pas de chiffres, de "
                                                                                       "caractères "
                                                                                       "spéciaux, "
                                                                                       "d'espace à double, de double "
@@ -164,7 +164,13 @@ class FormWTFDeleteGenre(FlaskForm):
         submit_btn_conf_del : Bouton de confirmation pour effacer un "genre".
         submit_btn_annuler : Bouton qui permet d'afficher la table "t_genre".
     """
-    nom_delete_wtf = StringField("Effacer ce genre")
-    submit_btn_del = SubmitField("Effacer genre")
+    Identifiant_delete_wtf = StringField("Identifiant")
+    nom_delete_wtf = StringField("Nom")
+    prenom_delete_wtf = StringField("Prénom")
+    mail_delete_wtf = StringField("Mail")
+    num_tel_delete_wtf = StringField("Numéro de téléphone")
+    designation_delete_wtf = StringField("Statut du compte")
+
+    submit_btn_del = SubmitField("Effacer")
     submit_btn_conf_del = SubmitField("Etes-vous sur d'effacer ?")
     submit_btn_annuler = SubmitField("Annuler")
