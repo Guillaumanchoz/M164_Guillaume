@@ -66,7 +66,7 @@ def genres_afficher(order_by, id_genre_sel):
                 else:
                     # Dans tous les autres cas, c'est que la table "t_genre" est vide.
                     # OM 2020.04.09 La ligne ci-dessous permet de donner un sentiment rassurant aux utilisateurs.
-                    flash(f"Données genres affichés !!", "success")
+                    flash(f"affichés !!", "success")
 
         except Exception as Exception_genres_afficher:
             raise ExceptionGenresAfficher(f"fichier : {Path(__file__).name}  ;  "
@@ -101,8 +101,11 @@ def genres_afficher(order_by, id_genre_sel):
 @app.route("/genres_ajouter", methods=['GET', 'POST'])
 def genres_ajouter_wtf():
     form = FormWTFAjouterGenres()
-    if request.method == "POST":
+    if request.method == "POST" and form.submit.data or form.submit_btn_annuler.data:
         try:
+            if form.submit_btn_annuler.data:
+                return redirect(url_for("genres_afficher", order_by="ASC", id_genre_sel=0))
+
             if form.validate_on_submit():
                 Identifiant_compte = form.identifiant_wtf.data
                 mdp = form.mdp_wtf.data
@@ -196,11 +199,14 @@ def genre_update_wtf():
     try:
         # 2023.05.14 OM S'il y a des listes déroulantes dans le formulaire
         # La validation pose quelques problèmes
-        if request.method == "POST" and form_update.submit.data:
+        if request.method == "POST" and form_update.validate_on_submit() and form_update.submit.data or form_update.submit_btn_annuler.data:
+            if form_update.submit_btn_annuler.data:
+                return redirect(url_for("genres_afficher", order_by="ASC", id_genre_sel=0))
+
             # Récupèrer la valeur du champ depuis "genre_update_wtf.html" après avoir cliqué sur "SUBMIT".
             # Puis la convertir en lettres minuscules.
             identifiant_compte = form_update.identifiant_compte_wtf.data
-            Mot_de_passe = form_update.mdp_wtf.data
+            Mot_de_passe = form_update.password.data
             nom = form_update.nom_wtf.data
             prenom = form_update.prenom_wtf.data
             mail = form_update.mail_wtf.data
@@ -216,7 +222,7 @@ def genre_update_wtf():
                                           }
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
-
+            strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_identifiant)s"""
             str_sql_update_intitulegenre = """UPDATE t_compte SET Identifiant_compte = %(value_identifiant)s,
                                                                 Mot_de_passe = %(value_Mot_de_passe)s,
                                                                 nom = %(value_nom)s,
@@ -227,14 +233,24 @@ def genre_update_wtf():
 
 
             with DBconnection() as mconn_bd:
-                mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
-            flash(f"Donnée mise à jour !!", "success")
-            print(f"Donnée mise à jour !!")
+                mconn_bd.execute(strsql_get_password, valeur_update_dictionnaire)
+                check_mdp_dict = mconn_bd.fetchone()
+                check_mdp = check_mdp_dict.get("Mot_de_passe")
+                print("ICI?")
+                if Mot_de_passe == check_mdp:
+                    mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
-            # afficher et constater que la donnée est mise à jour.
-            # Affiche seulement la valeur modifiée, "ASC" et l'"id_genre_update"
-            return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_compte_update))
+                    flash(f"Donnée mise à jour !!", "success")
+                    print(f"Donnée mise à jour !!")
+
+                    # afficher et constater que la donnée est mise à jour.
+                    # Affiche seulement la valeur modifiée, "ASC" et l'"id_genre_update"
+                    return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_compte_update))
+
+                else:
+                    flash("Identifiant ou Mot de passe incorrect", "danger")
+
 
         elif request.method == "GET":
             # Opération sur la BD pour récupérer "id_genre" et "intitule_genre" de la "t_genre"
@@ -255,7 +271,7 @@ def genre_update_wtf():
 
             # Afficher la valeur sélectionnée dans les champs du formulaire "genre_update_wtf.html"
             form_update.identifiant_compte_wtf.data = data_identifiant_compte["Identifiant_compte"]
-            form_update.mdp_wtf.data = data_identifiant_compte["Mot_de_passe"]
+            form_update.password.data = data_identifiant_compte["Mot_de_passe"]
             form_update.nom_wtf.data = data_identifiant_compte["nom"]
             form_update.prenom_wtf.data = data_identifiant_compte["prenom"]
             form_update.mail_wtf.data = data_identifiant_compte["mail"]
@@ -299,19 +315,63 @@ def genre_delete_wtf():
 
     try:
         print(" on submit ", form_delete.validate_on_submit())
-        if request.method == "POST" and form_delete.validate_on_submit():
+        if request.method == "POST" and (form_delete.validate_on_submit() or form_delete.submit_btn_annuler.data):
 
             if form_delete.submit_btn_annuler.data:
                 return redirect(url_for("genres_afficher", order_by="ASC", id_genre_sel=0))
 
-            if form_delete.submit_btn_conf_del.data:
-                # le formulaire "genres/genre_delete_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
-                data_films_attribue_genre_delete = session['data_films_attribue_genre_delete']
-                print("data_films_attribue_genre_delete ", data_films_attribue_genre_delete)
+            if form_delete.validate_on_submit() and form_delete.submit_btn_conf_del.data:
 
-                flash(f"Effacer le compte et les réservation qui y sont liés de façon définitive de la BD !!!", "danger")
+                if form_delete.submit_btn_conf_del.data:
 
-                btn_submit_del = True
+                    identifiant_compte = form_delete.Identifiant_delete_wtf.data
+                    password = form_delete.password.data
+
+                    valeur_delete_dictionnaire = {"value_identifiant": identifiant_compte,
+                                                  "value_mdp": password}
+
+                    strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_identifiant)s"""
+
+
+                    with DBconnection() as mconn_bd:
+                        mconn_bd.execute(strsql_get_password, valeur_delete_dictionnaire)
+                        check_mdp_dict = mconn_bd.fetchone()
+                        check_mdp = check_mdp_dict.get("Mot_de_passe")
+                        print("ICI?")
+                        if password == check_mdp:
+                            # le formulaire "genres/genre_delete_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
+                            data_films_attribue_genre_delete = session['data_films_attribue_genre_delete']
+                            print("data_films_attribue_genre_delete ", data_films_attribue_genre_delete)
+
+                            flash(
+                                f"Effacer le compte et les réservation qui y sont liés de façon définitive de la BD !!!",
+                                "danger")
+
+                            btn_submit_del = True
+                        else:
+                            # Si le mot de passe est incorrect, on relance le code de la méthode GET
+                            if data_films_attribue_genre_delete is None:
+                                valeur_select_dictionnaire = {"value_id_compte": id_compte_delete}
+
+                                # Requête pour récupérer les données du compte à effacer
+                                strsql_id_compte = ("""SELECT ID_compte, Identifiant_compte, Mot_de_passe, nom, prenom, mail, num_tel, designation FROM t_compte
+                                                               LEFT JOIN t_statut_compte on ID_statut_compte = FK_statut_compte
+                                                               WHERE id_compte = %(value_id_compte)s""")
+                                with DBconnection() as mydb_conn:
+                                    mydb_conn.execute(strsql_id_compte, valeur_select_dictionnaire)
+                                    data_nom_compte = mydb_conn.fetchone()
+
+                                # Afficher les données du compte dans les champs du formulaire
+                                form_delete.Identifiant_delete_wtf.data = data_nom_compte["Identifiant_compte"]
+                                form_delete.password.data = data_nom_compte["Mot_de_passe"]
+                                form_delete.nom_delete_wtf.data = data_nom_compte["nom"]
+                                form_delete.prenom_delete_wtf.data = data_nom_compte["prenom"]
+                                form_delete.mail_delete_wtf.data = data_nom_compte["mail"]
+                                form_delete.num_tel_delete_wtf.data = data_nom_compte["num_tel"]
+                                form_delete.designation_delete_wtf.data = data_nom_compte["designation"]
+
+                            # Afficher un message d'erreur
+                            flash("Identifiant ou Mot de passe incorrect", "danger")
 
 
             if form_delete.submit_btn_del.data:
@@ -347,51 +407,50 @@ def genre_delete_wtf():
                 return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=0))
 
         if request.method == "GET":
-            valeur_select_dictionnaire = {"value_id_compte": id_compte_delete}
+
+                valeur_select_dictionnaire = {"value_id_compte": id_compte_delete}
+                # Requête qui affiche tous les films_genres qui ont le genre que l'utilisateur veut effacer
+                strsql_compte_delete_afficher = """SELECT c.ID_Compte, r.ID_reservation, c.Identifiant_compte,Mot_de_passe, c.nom, c.prenom, c.mail, c.num_tel, r.date, r.nombre, h.heure, sres.etat, scom.designation
+                                                                FROM t_reservation r
+                                                                LEFT JOIN t_compte c ON c.ID_compte = r.FK_compte 
+                                                                LEFT JOIN t_heure h ON r.FK_heure = h.ID_heure
+                                                                LEFT JOIN t_statut_res sres ON r.FK_statut_res = sres.ID_statut_res
+                                                                LEFT JOIN t_statut_compte scom ON c.FK_statut_compte = scom.ID_statut_compte
+                                                                WHERE r.FK_compte = %(value_id_compte)s"""
 
 
-            print(f"id_compte_delete : {type(id_compte_delete)} ")
+                with DBconnection() as mydb_conn:
+                    mydb_conn.execute(strsql_compte_delete_afficher, valeur_select_dictionnaire)
+                    data_films_attribue_genre_delete = mydb_conn.fetchall()
+                    session['data_films_attribue_genre_delete'] = data_films_attribue_genre_delete
 
-            # Requête qui affiche tous les films_genres qui ont le genre que l'utilisateur veut effacer
-            strsql_compte_delete_afficher = """SELECT c.ID_Compte, r.ID_reservation, c.Identifiant_compte, c.nom, c.prenom, c.mail, c.num_tel, r.date, r.nombre, h.heure, sres.etat, scom.designation
-                                                            FROM t_reservation r
-                                                            LEFT JOIN t_compte c ON c.ID_compte = r.FK_compte 
-                                                            LEFT JOIN t_heure h ON r.FK_heure = h.ID_heure
-                                                            LEFT JOIN t_statut_res sres ON r.FK_statut_res = sres.ID_statut_res
-                                                            LEFT JOIN t_statut_compte scom ON c.FK_statut_compte = scom.ID_statut_compte
-                                                            WHERE r.FK_compte = %(value_id_compte)s"""
-
-
-            with DBconnection() as mydb_conn:
-                mydb_conn.execute(strsql_compte_delete_afficher, valeur_select_dictionnaire)
-                data_films_attribue_genre_delete = mydb_conn.fetchall()
-                print("data_films_attribue_genre_delete...", data_films_attribue_genre_delete)
-
-                # Nécessaire pour mémoriser les données afin d'afficher à nouveau
-                # le formulaire "genres/genre_delete_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
-                session['data_films_attribue_genre_delete'] = data_films_attribue_genre_delete
-
-                # affichage du nom du gerne / compte a effacer
-                strsql_id_compte = ("""SELECT ID_compte, Identifiant_compte, nom, prenom, mail, num_tel, designation FROM t_compte
-                                        LEFT JOIN t_statut_compte on ID_statut_compte = FK_statut_compte
-                                         WHERE id_compte = %(value_id_compte)s""")
-                mydb_conn.execute(strsql_id_compte, valeur_select_dictionnaire)
-                data_nom_compte = mydb_conn.fetchone()
-                print("data_nom_genre ", data_nom_compte, " type ", type(data_nom_compte), " identifiant ",
-                      data_nom_compte["Identifiant_compte"])
+                    # affichage du nom du gerne / compte a effacer
+                    strsql_id_compte = ("""SELECT ID_compte, Identifiant_compte, Mot_de_passe, nom, prenom, mail, num_tel, designation FROM t_compte
+                                            LEFT JOIN t_statut_compte on ID_statut_compte = FK_statut_compte
+                                             WHERE id_compte = %(value_id_compte)s""")
+                    mydb_conn.execute(strsql_id_compte, valeur_select_dictionnaire)
+                    data_nom_compte = mydb_conn.fetchone()
+                    print("data_nom_genre ", data_nom_compte, " type ", type(data_nom_compte), " identifiant ",
+                          data_nom_compte["Identifiant_compte"])
 
 
 
-            # Afficher la valeur sélectionnée dans le champ du formulaire "genre_delete_wtf.html"
-            form_delete.Identifiant_delete_wtf.data = data_nom_compte["Identifiant_compte"]
-            form_delete.nom_delete_wtf.data = data_nom_compte["nom"]
-            form_delete.prenom_delete_wtf.data = data_nom_compte["prenom"]
-            form_delete.mail_delete_wtf.data = data_nom_compte["mail"]
-            form_delete.num_tel_delete_wtf.data = data_nom_compte["num_tel"]
-            form_delete.designation_delete_wtf.data = data_nom_compte["designation"]
+                # Afficher la valeur sélectionnée dans le champ du formulaire "genre_delete_wtf.html"
+                form_delete.Identifiant_delete_wtf.data = data_nom_compte["Identifiant_compte"]
+                form_delete.password.data = data_nom_compte["Mot_de_passe"]
+                form_delete.nom_delete_wtf.data = data_nom_compte["nom"]
+                form_delete.prenom_delete_wtf.data = data_nom_compte["prenom"]
+                form_delete.mail_delete_wtf.data = data_nom_compte["mail"]
+                form_delete.num_tel_delete_wtf.data = data_nom_compte["num_tel"]
+                form_delete.designation_delete_wtf.data = data_nom_compte["designation"]
 
-            # Le bouton pour l'action "DELETE" dans le form. "genre_delete_wtf.html" est caché.
-            btn_submit_del = False
+                # Le bouton pour l'action "DELETE" dans le form. "genre_delete_wtf.html" est caché.
+
+                btn_submit_del = False
+
+
+
+
 
     except Exception as Exception_genre_delete_wtf:
         raise ExceptionGenreDeleteWtf(f"fichier : {Path(__file__).name}  ;  "

@@ -75,6 +75,13 @@
 						{% endfor %}
 					</p>
 					<p>
+						{{ form_delete.password.label }}<br>
+						{{ form_delete.password(size=32) }}<br>
+						{% for error in form_delete.password.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+					<p>
 						{{ form_delete.nom_delete_wtf.label }}<br>
 						{{ form_delete.nom_delete_wtf(size=32, readonly=true) }}<br>
 						{% for error in form_delete.nom_delete_wtf.errors %}

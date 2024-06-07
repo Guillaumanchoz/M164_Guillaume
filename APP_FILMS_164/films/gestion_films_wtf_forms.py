@@ -47,6 +47,7 @@ class FormWTFAddFilm(FlaskForm):
                                                                ])
 
     submit = SubmitField("Reserver")
+    submit_btn_annuler = SubmitField("Annuler")
 
 
 class FormWTFUpdateFilm(FlaskForm):
@@ -79,6 +80,7 @@ class FormWTFUpdateFilm(FlaskForm):
     ], validators=[DataRequired()])
 
     submit = SubmitField("Enregistrer")
+    submit_btn_annuler = SubmitField("Annuler")
 
 
 class FormWTFDeleteFilm(FlaskForm):
@@ -90,6 +92,8 @@ class FormWTFDeleteFilm(FlaskForm):
         submit_btn_conf_del : Bouton de confirmation pour effacer un "film".
         submit_btn_annuler : Bouton qui permet d'afficher la table "t_film".
     """
+    password = PasswordField('Mot de passe')
+
     nom_film_delete_wtf = StringField("Effacer la réservation")
     submit_btn_del_film = SubmitField("Effacer")
     submit_btn_conf_del_film = SubmitField("Etes-vous sur d'effacer ?")

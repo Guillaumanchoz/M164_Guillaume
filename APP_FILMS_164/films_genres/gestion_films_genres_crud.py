@@ -57,7 +57,7 @@ def reservation_afficher(id_film_sel):
                     # Si l'utilisateur change l'id_film dans l'URL et qu'il ne correspond à aucun film
                     flash(f"La reservation {id_film_sel} demandé n'existe pas !!", "warning")
                 else:
-                    None
+                    flash(f"affiché !!", "success")
 
 
         except Exception as Exception_reservation_afficher:

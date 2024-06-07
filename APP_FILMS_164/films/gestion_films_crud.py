@@ -36,9 +36,13 @@ Remarque :  Dans le champ "nom_film_update_wtf" du formulaire "films/films_updat
 def film_add_wtf():
     # Objet formulaire pour AJOUTER un film
     form_add_film = FormWTFAddFilm()
-    if request.method == "POST":
+    if request.method == "POST" and form_add_film.submit.data and form_add_film.validate_on_submit() or form_add_film.submit_btn_annuler.data:
         try:
+            if form_add_film.submit_btn_annuler.data:
+                return redirect(url_for('reservation_afficher', id_film_sel=0))
+
             if form_add_film.validate_on_submit():
+
 
                 statut = 1
                 username = form_add_film.username.data
@@ -58,7 +62,7 @@ def film_add_wtf():
                                                   "value_compte_id": compte_id,
                                                   }
                 date_creation = datetime.today().strftime("%Y-%m-%d")
-                print("ICI?")
+
                 #requete
                 strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
                 strsql_compte_id = """SELECT ID_compte FROM t_compte WHERE Identifiant_compte = %(value_user)s"""
@@ -73,7 +77,7 @@ def film_add_wtf():
                     mconn_bd.execute(strsql_get_password, valeurs_insertion_dictionnaire)
                     check_mdp_dict = mconn_bd.fetchone()
                     check_mdp = check_mdp_dict.get("Mot_de_passe")
-                    print("ICI?")
+
                     if password == check_mdp:
                         mconn_bd.execute(strsql_compte_id, valeurs_insertion_dictionnaire)
                         check_compte_dict = mconn_bd.fetchone()
@@ -143,7 +147,9 @@ def film_update_wtf():
     form_update_film = FormWTFUpdateFilm()
     try:
         # La validation pose quelques problèmes
-        if request.method == "POST" and form_update_film.submit.data:
+        if request.method == "POST" and form_update_film.submit.data and form_update_film.validate_on_submit() or form_update_film.submit_btn_annuler.data:
+            if form_update_film.submit_btn_annuler.data:
+                return redirect(url_for("reservation_afficher", id_film_sel=0))
 
             statut = 1
             username = form_update_film.username.data
@@ -299,49 +305,20 @@ def film_delete_wtf():
 
     id_film_delete = request.values['id_film_btn_delete_html']
     form_delete_film = FormWTFDeleteFilm()
+    id_reservation_delete = int(id_film_delete)
 
     try:
-        # annuler
-        if form_delete_film.submit_btn_annuler.data:
-            return redirect(url_for("reservation_afficher", id_film_sel=0))
-        #confirmer
-        if form_delete_film.submit_btn_conf_del_film.data:
-            # le formulaire "films/film_delete_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
-            data_film_delete = session['data_film_delete']
-            flash(f"Effacer le film de façon définitive de la BD !!!", "danger")
-
-            # bouton Effacer
-            btn_submit_del = True
-
-
-        if form_delete_film.submit_btn_del_film.data:
-            valeur_delete_dictionnaire = {"value_id_film": id_film_delete}
-            print("valeur_delete_dictionnaire ", valeur_delete_dictionnaire)
-
-            #requet pour effacer
-            str_sql_delete_film = """DELETE FROM t_reservation WHERE id_reservation = %(value_id_film)s"""
-
-
-            with DBconnection() as mconn_bd:
-                #mconn_bd.execute(str_sql_delete_fk_film_genre, valeur_delete_dictionnaire)
-                mconn_bd.execute(str_sql_delete_film, valeur_delete_dictionnaire)
-
-            flash(f"Film définitivement effacé !!", "success")
-            print(f"Film définitivement effacé !!")
-
-            # afficher les données
-            return redirect(url_for('reservation_afficher', id_film_sel=0))
-        if request.method == "GET":
-            valeur_select_dictionnaire = {"value_id_film": id_film_delete}
+        if request.method == "GET" or not form_delete_film.validate_on_submit():
+            valeur_select_dictionnaire = {"value_id_film": id_reservation_delete}
             print(id_film_delete, type(id_film_delete))
 
-            # Requête qui affiche le film qui doit être efffacé.
+            # Requête qui affiche le film qui doit être effacé.
             str_sql_genres_films_delete = """SELECT ID_reservation, nom, prenom, date, heure, etat, r.nombre FROM t_reservation r
-                                                            INNER JOIN t_compte c ON c.id_compte = r.FK_compte
-                                                            INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
-                                                            INNER JOIN t_heure h ON h.id_heure = r.FK_heure
-                                                            WHERE id_reservation = %(value_id_film)s
-                                                            ORDER BY date"""
+                                             INNER JOIN t_compte c ON c.id_compte = r.FK_compte
+                                             INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
+                                             INNER JOIN t_heure h ON h.id_heure = r.FK_heure
+                                             WHERE id_reservation = %(value_id_film)s
+                                             ORDER BY date"""
 
             with DBconnection() as mydb_conn:
                 mydb_conn.execute(str_sql_genres_films_delete, valeur_select_dictionnaire)
@@ -354,6 +331,74 @@ def film_delete_wtf():
 
             # Le bouton pour l'action "DELETE" dans le form. "film_delete_wtf.html" est caché.
             btn_submit_del = False
+
+        # annuler
+        if form_delete_film.submit_btn_annuler.data:
+            return redirect(url_for('reservation_afficher', id_film_sel=0))
+
+        #if form_delete_film.validate_on_submit():
+
+            # confirmer
+        if form_delete_film.submit_btn_conf_del_film.data:
+            password = form_delete_film.password.data
+            valeur_delete_dictionnaire = {"value_identifiant": id_reservation_delete}
+            print(id_reservation_delete)
+            print(type(id_reservation_delete))
+            strsql_get_password = """SELECT Mot_de_passe FROM t_reservation
+                                        LEFT JOIN t_compte ON ID_compte = FK_compte
+                                        WHERE ID_reservation = %(value_identifiant)s"""
+
+            with DBconnection() as mconn_bd:
+                mconn_bd.execute(strsql_get_password, valeur_delete_dictionnaire)
+                check_mdp_dict = mconn_bd.fetchone()
+                print(check_mdp_dict)
+                check_mdp = check_mdp_dict.get("Mot_de_passe")
+                print(check_mdp)
+
+                print(password)
+
+                if password == check_mdp:
+                    print("Test")
+                    # le formulaire "films/film_delete_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
+                    data_film_delete = session['data_film_delete']
+                    flash(f"Effacer le film de façon définitive de la BD !!!", "danger")
+
+                    # bouton Effacer
+                    btn_submit_del = True
+                else:
+                    flash("Mot de passe incorrect !", "danger")
+
+
+            if form_delete_film.submit_btn_del_film.data and btn_submit_del:
+                valeur_delete_dictionnaire = {"value_id_film": id_reservation_delete}
+                print("valeur_delete_dictionnaire ", valeur_delete_dictionnaire)
+
+                # requête pour effacer
+                str_sql_delete_film = """DELETE FROM t_reservation WHERE id_reservation = %(value_id_film)s"""
+
+                with DBconnection() as mconn_bd:
+                    mconn_bd.execute(str_sql_delete_film, valeur_delete_dictionnaire)
+
+                flash(f"Film définitivement effacé !!", "success")
+                print(f"Film définitivement effacé !!")
+
+                # afficher les données
+                return redirect(url_for('reservation_afficher', id_film_sel=0))
+
+        # Récupérer les données à chaque requête POST pour les réafficher en cas d'erreur
+        if data_film_delete is None:
+            valeur_select_dictionnaire = {"value_id_film": id_reservation_delete}
+            str_sql_genres_films_delete = """SELECT ID_reservation, nom, prenom, date, heure, etat, r.nombre FROM t_reservation r
+                                             INNER JOIN t_compte c ON c.id_compte = r.FK_compte
+                                             INNER JOIN t_statut_res s ON s.id_statut_res = r.FK_statut_res
+                                             INNER JOIN t_heure h ON h.id_heure = r.FK_heure
+                                             WHERE id_reservation = %(value_id_film)s
+                                             ORDER BY date"""
+
+            with DBconnection() as mydb_conn:
+                mydb_conn.execute(str_sql_genres_films_delete, valeur_select_dictionnaire)
+                data_film_delete = mydb_conn.fetchall()
+                session['data_film_delete'] = data_film_delete
 
     except Exception as Exception_film_delete_wtf:
         raise ExceptionFilmDeleteWtf(f"fichier : {Path(__file__).name}  ;  "

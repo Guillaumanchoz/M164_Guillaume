@@ -20,9 +20,9 @@
 						{% endfor %}
 					</p>
 					<p>
-						{{ form_update.mdp_wtf.label }}<br>
-						{{ form_update.mdp_wtf(size=32) }}<br>
-						{% for error in form_update.mdp_wtf.errors %}
+						{{ form_update.password.label }}<br>
+						{{ form_update.password(size=32) }}<br>
+						{% for error in form_update.password.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
@@ -56,6 +56,8 @@
 					</p>
 				</div>
 				{{ form_update.submit(class="btn btn-primary") }}
+
+				{{ form_update.submit_btn_annuler(class="btn btn-primary") }}
 			</form>
 		</div>
 	</div>

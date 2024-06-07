@@ -31,9 +31,8 @@
 					</th>
 				</tr>
 				</thead>
-				{% endif %}
-				{% for row in data_film_del %}
 				<tbody>
+				{% for row in data_film_del %}
 				<tr>
 					<th class="align-middle">
 						{{ row.nom }}
@@ -53,19 +52,28 @@
 					<th class="align-middle">
 						{{ row.etat}}
 					</th>
-				<tr>
-
 				</tr>
-				</tr>
+				{% endfor %}
 				</tbody>
-				{% else %}
+				<thead>
+				<tr>
+					<th class="">
+						Mot de passe
+					</th>
+				</tr>
+				</thead>
 				<tbody>
 				<tr>
-
+    				<td>
+        				{{ form_delete_film.password.label }}<br>
+        				{{ form_delete_film.password(size=32) }}<br>
+						{% for error in form_delete_film.password.errors %}
+						<span style="color: red;">[{{ error }}]</span>
+        				{% endfor %}
+    				</td>
 				</tr>
 				</tbody>
-				{% endfor %}
-
+				{% endif %}
 			</table>
 
 			<form action="" method="POST" novalidate>
@@ -83,4 +91,3 @@
 	</div>
 </div>
 {% endblock %}
-
