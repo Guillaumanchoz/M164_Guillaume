@@ -88,8 +88,17 @@ class FormWTFUpdateGenre(FlaskForm):
                                                                                       "spéciaux, "
                                                                                       "pas d'espace")
                                                                        ])
-    password = PasswordField('Mot de passe', validators=[DataRequired(message="Il manque le mot de passe !!!")])
 
+    mdp_regexp = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+    mdp_wtf = StringField("mot de passe ", validators=[Length(min=2, max=30, message="min 2 max 20"),
+                                                       Regexp(mdp_regexp,
+                                                              message="Il faut au minimum : "
+                                                                      "1 lettre minuscule "
+                                                                      "1 lettre majuscule "
+                                                                      "1 chiffre "
+                                                                      "1 caractère spécial"
+                                                                      "Minimum 8 caractère")
+                                                       ])
     nom_regexp = "^[a-zA-ZÀ-ÿ]+([-']?[a-zA-ZÀ-ÿ]+)*$"
     nom_wtf = StringField("nom", validators=[Length(min=2, max=20, message="min 2 max 20"),
                                                                        Regexp(nom_regexp,
@@ -136,9 +145,7 @@ class FormWTFDeleteGenre(FlaskForm):
         submit_btn_annuler : Bouton qui permet d'afficher la table "t_genre".
     """
     Identifiant_delete_wtf = StringField("Identifiant")
-
-    password = PasswordField('Mot de passe', validators=[DataRequired(message="Il manque le mot de passe !!!")])
-
+    password = PasswordField('Mot de passe')
     nom_delete_wtf = StringField("Nom")
     prenom_delete_wtf = StringField("Prénom")
     mail_delete_wtf = StringField("Mail")

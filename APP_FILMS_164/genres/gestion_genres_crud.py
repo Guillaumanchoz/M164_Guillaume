@@ -182,111 +182,93 @@ def genres_ajouter_wtf():
 """
 
 
+
 @app.route("/genre_update", methods=['GET', 'POST'])
 def genre_update_wtf():
     # L'utilisateur vient de cliquer sur le bouton "EDIT". Récupère la valeur de "id_genre"
-    id_genre_update = request.values['id_genre_btn_edit_html']
-    id_compte_update = int(id_genre_update)
+    id_compte_update = request.values.get('id_genre_btn_edit_html', type=int)
 
-    print(f"id_genre : {id_genre_update}")
-    print(type(id_genre_update))
-    print(f"id_compte : {id_compte_update}")
+    print(id_compte_update)
     print(type(id_compte_update))
-
-
     # Objet formulaire pour l'UPDATE
     form_update = FormWTFUpdateGenre()
-    try:
-        # 2023.05.14 OM S'il y a des listes déroulantes dans le formulaire
-        # La validation pose quelques problèmes
-        if request.method == "POST" and form_update.validate_on_submit() and form_update.submit.data or form_update.submit_btn_annuler.data:
-            if form_update.submit_btn_annuler.data:
-                return redirect(url_for("genres_afficher", order_by="ASC", id_genre_sel=0))
 
-            # Récupèrer la valeur du champ depuis "genre_update_wtf.html" après avoir cliqué sur "SUBMIT".
-            # Puis la convertir en lettres minuscules.
+    if form_update.submit_btn_annuler.data:
+        return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=0))
+    if form_update.validate_on_submit() or form_update.submit.data:
+        try:
+            print("LAAAAA")
             identifiant_compte = form_update.identifiant_compte_wtf.data
-            Mot_de_passe = form_update.password.data
+            Mot_de_passe = form_update.mdp_wtf.data
             nom = form_update.nom_wtf.data
             prenom = form_update.prenom_wtf.data
             mail = form_update.mail_wtf.data
             num_tel = form_update.num_tel_wtf.data
 
-            valeur_update_dictionnaire = {"value_id_compte": id_compte_update,
-                                          "value_identifiant": identifiant_compte,
-                                          "value_Mot_de_passe": Mot_de_passe,
-                                          "value_nom": nom,
-                                          "Value_prenom": prenom,
-                                          "Value_mail": mail,
-                                          "Value_num_tel": num_tel
-                                          }
-            print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
+            valeur_update_dictionnaire = {
+                "value_id_compte": id_compte_update,
+                "value_identifiant": identifiant_compte,
+                "value_Mot_de_passe": Mot_de_passe,
+                "value_nom": nom,
+                "value_prenom": prenom,
+                "value_mail": mail,
+                "value_num_tel": num_tel
+            }
 
-            strsql_get_password = """SELECT Mot_de_passe FROM t_compte WHERE Identifiant_compte = %(value_identifiant)s"""
-            str_sql_update_intitulegenre = """UPDATE t_compte SET Identifiant_compte = %(value_identifiant)s,
-                                                                Mot_de_passe = %(value_Mot_de_passe)s,
-                                                                nom = %(value_nom)s,
-                                                                prenom = %(Value_prenom)s, 
-                                                                mail = %(Value_mail)s,
-                                                                num_tel = %(Value_num_tel)s
-                                                                WHERE ID_compte = %(value_id_compte)s """
-
+            str_sql_update_intitulegenre = """
+                UPDATE t_compte SET Identifiant_compte = %(value_identifiant)s,
+                    Mot_de_passe = %(value_Mot_de_passe)s,
+                    nom = %(value_nom)s,
+                    prenom = %(value_prenom)s,
+                    mail = %(value_mail)s,
+                    num_tel = %(value_num_tel)s
+                    WHERE ID_compte = %(value_id_compte)s
+            """
 
             with DBconnection() as mconn_bd:
+                mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
-                mconn_bd.execute(strsql_get_password, valeur_update_dictionnaire)
-                check_mdp_dict = mconn_bd.fetchone()
-                check_mdp = check_mdp_dict.get("Mot_de_passe")
-                print("ICI?")
-                if Mot_de_passe == check_mdp:
-                    mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
+            flash(f"Donnée mise à jour !!", "success")
+            print(f"Donnée mise à jour !!")
+            return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=0))
 
-                    flash(f"Donnée mise à jour !!", "success")
-                    print(f"Donnée mise à jour !!")
+        except Exception as e:
+            flash(f"Erreur lors de la mise à jour : {e}", "danger")
+            print(f"Erreur lors de la mise à jour : {e}")
 
-                    # afficher et constater que la donnée est mise à jour.
-                    # Affiche seulement la valeur modifiée, "ASC" et l'"id_genre_update"
-                    return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_compte_update))
+    else:
+        try:
+            print("IICCCIII")
+            str_sql_id_genre = "SELECT * FROM t_compte WHERE ID_compte = %(value_id_compte)s"
+            valeur_select_dictionnaire = {"value_id_compte": id_compte_update}
 
-                else:
-                    flash("Identifiant ou Mot de passe incorrect", "danger")
-
-
-        elif request.method == "GET":
-            # Opération sur la BD pour récupérer "id_genre" et "intitule_genre" de la "t_genre"
-            str_sql_id_genre = "SELECT * FROM t_compte " \
-                               "WHERE ID_compte = %(value_id_compte)s"
-            valeur_select_dictionnaire = {"value_id_compte": id_compte_update,
-
-                                          }
             with DBconnection() as mybd_conn:
                 mybd_conn.execute(str_sql_id_genre, valeur_select_dictionnaire)
-            # Une seule valeur est suffisante "fetchone()", vu qu'il n'y a qu'un seul champ "nom genre" pour l'UPDATE
-            data_identifiant_compte = mybd_conn.fetchone()
+                data_identifiant_compte = mybd_conn.fetchone()
+            print("t passer????")
+            if data_identifiant_compte:
+                form_update.identifiant_compte_wtf.data = data_identifiant_compte["Identifiant_compte"]
+                form_update.mdp_wtf.data = data_identifiant_compte["Mot_de_passe"]
+                form_update.nom_wtf.data = data_identifiant_compte["nom"]
+                form_update.prenom_wtf.data = data_identifiant_compte["prenom"]
+                form_update.mail_wtf.data = data_identifiant_compte["mail"]
+                form_update.num_tel_wtf.data = data_identifiant_compte["num_tel"]
 
 
 
-            # print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
-            #       data_nom_genre["intitule_genre"])
+        except Exception as e:
+            flash(f"Erreur lors de la récupération des données : {e}", "danger")
+            print(f"Erreur lors de la récupération des données : {e}")
 
-            # Afficher la valeur sélectionnée dans les champs du formulaire "genre_update_wtf.html"
-            form_update.identifiant_compte_wtf.data = data_identifiant_compte["Identifiant_compte"]
-            form_update.password.data = data_identifiant_compte["Mot_de_passe"]
-            form_update.nom_wtf.data = data_identifiant_compte["nom"]
-            form_update.prenom_wtf.data = data_identifiant_compte["prenom"]
-            form_update.mail_wtf.data = data_identifiant_compte["mail"]
-            form_update.num_tel_wtf.data = data_identifiant_compte["num_tel"]
+    return render_template("genres/genre_update_wtf.html", form_update=form_update)
 
-    except Exception as Exception_genre_update_wtf:
-        raise ExceptionGenreUpdateWtf(f"fichier : {Path(__file__).name}  ;  "
-                                      f"{genre_update_wtf.__name__} ; "
-                                      f"{Exception_genre_update_wtf}")
 
-    print("returning template")
-    try:
-        return render_template("genres/genre_update_wtf.html", form_update=form_update)
-    except Exception as e:
-        print(e)
+
+
+
+
+
+
 
 
 """

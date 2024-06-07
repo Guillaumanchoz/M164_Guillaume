@@ -92,9 +92,8 @@ class FormWTFDeleteFilm(FlaskForm):
         submit_btn_conf_del : Bouton de confirmation pour effacer un "film".
         submit_btn_annuler : Bouton qui permet d'afficher la table "t_film".
     """
-    password = PasswordField('Mot de passe')
 
-    nom_film_delete_wtf = StringField("Effacer la réservation")
+    nom_film_delete_wtf = StringField("supprimer la réservation")
     submit_btn_del_film = SubmitField("Effacer")
     submit_btn_conf_del_film = SubmitField("Etes-vous sur d'effacer ?")
     submit_btn_annuler = SubmitField("Annuler")

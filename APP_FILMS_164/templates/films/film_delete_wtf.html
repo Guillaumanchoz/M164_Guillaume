@@ -2,92 +2,56 @@
 {% block title %} Effacer un FILM (WTF) {% endblock %}
 {% block body %}
 <div class="container">
-	<div class="row">
-		<div class="col-md-12">
-			<p>
-				Effacer une réservation
-			</p>
-			<table class="table table-responsive-sm">
-				{% if data_film_del %}
-				<thead>
-				<tr>
-					<th class="">
-						Nom
-					</th>
-					<th class="">
-						Prénom
-					</th>
-					<th class="">
-						Date
-					</th>
-					<th class="">
-						Heure
-					</th>
-					<th class="">
-						Nombre de participant
-					</th>
-					<th class="">
-						Etat de la réservation
-					</th>
-				</tr>
-				</thead>
-				<tbody>
-				{% for row in data_film_del %}
-				<tr>
-					<th class="align-middle">
-						{{ row.nom }}
-					</th>
-					<th class="align-middle">
-						{{ row.prenom }}
-					</th>
-					<th class="align-middle">
-						{{ row.date}}
-					</th>
-					<th class="align-middle">
-						{{ row.heure}}
-					</th>
-					<th class="align-middle">
-						{{ row.nombre}}
-					</th>
-					<th class="align-middle">
-						{{ row.etat}}
-					</th>
-				</tr>
-				{% endfor %}
-				</tbody>
-				<thead>
-				<tr>
-					<th class="">
-						Mot de passe
-					</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr>
-    				<td>
-        				{{ form_delete_film.password.label }}<br>
-        				{{ form_delete_film.password(size=32) }}<br>
-						{% for error in form_delete_film.password.errors %}
-						<span style="color: red;">[{{ error }}]</span>
-        				{% endfor %}
-    				</td>
-				</tr>
-				</tbody>
-				{% endif %}
-			</table>
+    <div class="row">
+        <div class="col-md-12">
+            <p>
+                Effacer une réservation
+            </p>
+            <table class="table table-responsive-sm">
+                {% if data_film_del %}
+                <thead>
+                    <tr>
+                        <th class="">Nom</th>
+                        <th class="">Prénom</th>
+                        <th class="">Date</th>
+                        <th class="">Heure</th>
+                        <th class="">Nombre de participant</th>
+                        <th class="">Etat de la réservation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data_film_del %}
+                    <tr>
+                        <th class="align-middle">{{ row.nom }}</th>
+                        <th class="align-middle">{{ row.prenom }}</th>
+                        <th class="align-middle">{{ row.date }}</th>
+                        <th class="align-middle">{{ row.heure }}</th>
+                        <th class="align-middle">{{ row.nombre }}</th>
+                        <th class="align-middle">{{ row.etat }}</th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% else %}
+                <tbody>
+                    <tr>
+                        <td colspan="6">Aucune donnée à afficher</td>
+                    </tr>
+                </tbody>
+                {% endif %}
+            </table>
 
-			<form action="" method="POST" novalidate>
-				<!-- Protection contre les attaques Cross-Site Request Forgery (CSRF) -->
-				{{ form_delete_film.hidden_tag() }}
-				{{ form_delete_film.submit_btn_conf_del_film(class="btn btn-info") }}
+            <form action="" method="POST" novalidate>
+                <!-- Protection contre les attaques Cross-Site Request Forgery (CSRF) -->
+                {{ form_delete_film.hidden_tag() }}
+                {{ form_delete_film.submit_btn_conf_del_film(class="btn btn-info") }}
 
-				{% if btn_submit_del %}
-					{{ form_delete_film.submit_btn_del_film(class="btn btn-danger") }}
-				{% endif %}
+                {% if btn_submit_del %}
+                    {{ form_delete_film.submit_btn_del_film(class="btn btn-danger") }}
+                {% endif %}
 
-				{{ form_delete_film.submit_btn_annuler(class="btn btn-primary") }}
-			</form>
-		</div>
-	</div>
+                {{ form_delete_film.submit_btn_annuler(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
